@@ -1,40 +1,48 @@
+// Description: Handlers package for audio file processing.
 package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/justyura/vox/internal/oss"
 )
 
-func Upload(c *gin.Context) {
-	form, err := c.MultipartForm()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid form data",
-		})
-		return
-	}
-	files := form.File["audio"]
-
-	for _, file := range files {
-		if !isAllowedFile(file.Filename) {
+func Upload(oss oss.OSS) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		form, err := c.MultipartForm()
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": file.Filename + " invalid format",
+				"error": "invalid form data",
 			})
 			return
 		}
-		if file.Size > 10<<20 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": file.Filename + " too large"})
-			return
+		files := form.File["audio"]
+
+		for _, file := range files {
+			if !isAllowedFile(file.Filename) {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": file.Filename + " invalid format",
+				})
+				return
+			}
+			if file.Size > 10<<20 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": file.Filename + " too large"})
+				return
+			}
+			_, err := oss.Upload(file)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": "upload failed",
+				})
+				return
+			}
 		}
-		log.Println(file.Filename)
-		c.SaveUploadedFile(file, "./files/"+file.Filename)
+		c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
 	}
-	c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
 }
 
 func isAllowedFile(filename string) bool {
