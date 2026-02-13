@@ -10,10 +10,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type mockOSS struct{}
+
+func (m *mockOSS) Upload(file *multipart.FileHeader) (string, error) {
+	return file.Filename, nil
+}
+
 func TestUploadNoFile(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.POST("/upload", Upload)
+	r.POST("/upload", Upload(&mockOSS{}))
 
 	req := httptest.NewRequest(http.MethodPost, "/upload", nil)
 	w := httptest.NewRecorder()
@@ -27,7 +33,7 @@ func TestUploadNoFile(t *testing.T) {
 func TestUploadFileTooLarge(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.POST("/upload", Upload)
+	r.POST("/upload", Upload(&mockOSS{}))
 
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
@@ -48,7 +54,7 @@ func TestUploadFileTooLarge(t *testing.T) {
 func TestUploadInvalidFile(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.POST("/upload", Upload)
+	r.POST("/upload", Upload(&mockOSS{}))
 
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
@@ -69,7 +75,7 @@ func TestUploadInvalidFile(t *testing.T) {
 func TestUploadSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.POST("/upload", Upload)
+	r.POST("/upload", Upload(&mockOSS{}))
 
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
