@@ -7,3 +7,18 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - ./minio-data:/data
+  db:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: vox
+      POSTGRES_PASSWORD: vox
+      POSTGRES_DB: vox
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
