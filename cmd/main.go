@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/justyura/vox/internal/db"
 	"github.com/justyura/vox/internal/handler"
 	"github.com/justyura/vox/internal/oss"
 )
@@ -20,10 +21,19 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	database, err := db.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := database.Migrate("file://migrations", os.Getenv("DATABASE_URL")); err != nil {
+		log.Fatal(err)
+	}
 	r := gin.Default()
 
 	r.GET("/health", handler.Health)
 	r.POST("/upload", handler.Upload(store))
+	r.POST("/signup", handler.SignUp(database, os.Getenv("JWT_SECRET_KEY")))
+	r.POST("/login", handler.Login(database, os.Getenv("JWT_SECRET_KEY")))
 
 	r.Run(":8081")
 }

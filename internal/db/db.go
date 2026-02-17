@@ -10,20 +10,22 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Open(driverName, dataSourceName string) (*sql.DB, error) {
+type DB struct {
+	*sql.DB
+}
+
+func Open(driverName, dataSourceName string) (*DB, error) {
 	db, err := sql.Open(driverName, dataSourceName)
 	if err != nil {
 		return nil, err
 	}
-
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
-
-	return db, nil
+	return &DB{db}, nil
 }
 
-func Migrate(filepath, dataSourceName string) error {
+func (d *DB) Migrate(filepath, dataSourceName string) error {
 	m, err := migrate.New(
 		filepath,
 		dataSourceName)
