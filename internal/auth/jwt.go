@@ -17,7 +17,7 @@ func CreateJWT(userid, email, jwtSecret string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return tokenString, err
+	return tokenString, nil
 }
 
 func ValidateJWT(tokenString, jwtSecret string) (string, string, error) {

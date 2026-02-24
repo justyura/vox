@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/justyura/vox/internal/auth"
@@ -18,7 +20,17 @@ func SignUp(database *db.DB, jwtsecret string) gin.HandlerFunc {
 			return
 		}
 		id := uuid.New()
-		db.CreateUser(database.DB, id, email, passwordHash)
+		err = db.CreateUser(database.DB, id, email, passwordHash)
+		if err != nil {
+			if errors.Is(err, db.ErrUserExists) {
+				c.JSON(409, gin.H{
+					"error": "email already registered",
+				})
+				return
+			}
+			c.JSON(500, gin.H{"error": "internal error"})
+			return
+		}
 		jwt, err := auth.CreateJWT(id.String(), email, jwtsecret)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
@@ -36,6 +48,10 @@ func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
 		user, err := db.GetUserByEmail(database.DB, email)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
+			return
+		}
+		if user == nil {
+			c.JSON(401, gin.H{"error": "invalid credentials"})
 			return
 		}
 		if !auth.CheckPassword(user.Password, password) {

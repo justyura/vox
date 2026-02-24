@@ -2,17 +2,27 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/justyura/vox/internal/model"
+	"github.com/lib/pq"
 )
+
+var ErrUserExists = errors.New("user already exists")
 
 func CreateUser(db *sql.DB, id uuid.UUID, email, passwordhash string) error {
 	_, err := db.Exec(`
 		INSERT INTO users (id, email, password)
 		VALUES ($1, $2, $3)
 	`, id, email, passwordhash)
-	return err
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return ErrUserExists
+		}
+		return err
+	}
+	return nil
 }
 
 func GetUserByEmail(db *sql.DB, email string) (*model.User, error) {
@@ -26,8 +36,11 @@ func GetUserByEmail(db *sql.DB, email string) (*model.User, error) {
 		&user.Email,
 		&user.Password,
 	)
-	if err != nil && err != sql.ErrNoRows {
-		return &user, err
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
 	}
 	return &user, nil
 }
