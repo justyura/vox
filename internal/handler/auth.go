@@ -14,6 +14,12 @@ func SignUp(database *db.DB, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
+		if email == "" || password == "" {
+			c.JSON(400, gin.H{
+				"error": "email and password required",
+			})
+			return
+		}
 		passwordHash, err := auth.HashPassword(password)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
@@ -45,6 +51,12 @@ func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
+		if email == "" || password == "" {
+			c.JSON(400, gin.H{
+				"error": "email and password required",
+			})
+			return
+		}
 		user, err := db.GetUserByEmail(database.DB, email)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
