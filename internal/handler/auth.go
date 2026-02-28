@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -78,5 +79,19 @@ func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
 		}
 
 		c.JSON(200, gin.H{"message": "login successful", "token": jwt})
+	}
+}
+
+func Whoami(jwtsecret string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		authHeader := ctx.GetHeader("Authorization")
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+		userid, useremail, err := auth.ValidateJWT(tokenString, jwtsecret)
+		if err != nil {
+			ctx.JSON(401, gin.H{"error": "invalid token"})
+			return
+		}
+		ctx.JSON(200, gin.H{"user_id": userid, "email": useremail})
 	}
 }

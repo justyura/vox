@@ -31,9 +31,11 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/health", handler.Health)
-	r.POST("/upload", handler.Upload(store))
+	r.GET("/whoami", handler.Whoami(os.Getenv("JWT_SECRET_KEY")))
 	r.POST("/signup", handler.SignUp(database, os.Getenv("JWT_SECRET_KEY")))
 	r.POST("/login", handler.Login(database, os.Getenv("JWT_SECRET_KEY")))
+
+	r.POST("/upload", handler.Upload(store))
 
 	r.Run(":8081")
 }
