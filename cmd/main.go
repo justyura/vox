@@ -38,7 +38,7 @@ func main() {
 	authorized.Use(handler.Auth(os.Getenv("JWT_SECRET_KEY")))
 	{
 		authorized.GET("/whoami", handler.Whoami())
-		authorized.POST("/upload", handler.Upload(store))
+		authorized.POST("/upload", handler.Upload(database, store))
 	}
 
 	r.Run(":8081")

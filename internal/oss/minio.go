@@ -37,20 +37,20 @@ func NewMinIOSS(endpointurl, accessKeyID, secretAccessKey, bucket string) (*MinI
 	}, err
 }
 
-func (s *MinIO) Upload(file *multipart.FileHeader) (string, error) {
+func (s *MinIO) Upload(file *multipart.FileHeader, objectKey string) (string, error) {
 	content, err := file.Open()
 	log.Printf("Opened file %s for upload.\n", file.Filename)
 	if err != nil {
 		return "", err
 	}
 	defer content.Close()
-	log.Printf("Uploading file %s to bucket %s...\n", file.Filename, s.bucket)
+	log.Printf("Uploading file %s to bucket %s...\n", objectKey, s.bucket)
 
-	_, err = s.client.PutObject(context.Background(), s.bucket, file.Filename, content, file.Size, minio.PutObjectOptions{})
+	_, err = s.client.PutObject(context.Background(), s.bucket, objectKey, content, file.Size, minio.PutObjectOptions{})
 	if err != nil {
 		return "", err
 	}
-	log.Printf("File %s uploaded successfully.\n", file.Filename)
+	log.Printf("File %s uploaded successfully.\n", objectKey)
 
-	return file.Filename, nil
+	return objectKey, nil
 }

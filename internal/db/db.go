@@ -1,3 +1,4 @@
+// Package db provides a simple wrapper around sql.DB and migration functionality.
 package db
 
 import (
