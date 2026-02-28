@@ -82,16 +82,31 @@ func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
 	}
 }
 
-func Whoami(jwtsecret string) gin.HandlerFunc {
+func Whoami() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		userid := ctx.MustGet("user_id")
+		useremail := ctx.MustGet("user_email")
+		ctx.JSON(200, gin.H{"user_id": userid, "email": useremail})
+	}
+}
+
+func Auth(jwtsecret string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authHeader := ctx.GetHeader("Authorization")
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		userid, useremail, err := auth.ValidateJWT(tokenString, jwtsecret)
 		if err != nil {
-			ctx.JSON(401, gin.H{"error": "invalid token"})
+			ctx.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
 			return
 		}
-		ctx.JSON(200, gin.H{"user_id": userid, "email": useremail})
+		if userid == "" || useremail == "" {
+			ctx.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
+			return
+		}
+
+		ctx.Set("user_id", userid)
+		ctx.Set("user_email", useremail)
+		ctx.Next()
 	}
 }
