@@ -1,4 +1,4 @@
-// Description: Handlers package for audio file processing.
+// Package handler for audio file processing.
 package handler
 
 import (
