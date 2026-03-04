@@ -1,9 +1,12 @@
 package db
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestOpenDB(t *testing.T) {
-	db, err := Open("postgres", "user=vox password=vox dbname=vox sslmode=disable")
+	db, err := Open("postgres", os.Getenv("TEST_DATABASE_URL"))
 	if err != nil {
 		t.Fatalf("failed to open db: %v", err)
 	}
@@ -11,13 +14,7 @@ func TestOpenDB(t *testing.T) {
 }
 
 func TestMigrateDB(t *testing.T) {
-	db, err := Open("postgres", "user=vox password=vox dbname=vox sslmode=disable")
-	if err != nil {
-		t.Fatalf("failed to open db: %v", err)
-	}
-	defer db.Close()
-
-	err = db.Migrate("file://../../migrations", "postgres://vox:vox@localhost:5432/vox?sslmode=disable")
+	err := Migrate("file://../../migrations", os.Getenv("TEST_DATABASE_URL"))
 	if err != nil {
 		t.Fatalf("failed to migrate db: %v", err)
 	}
