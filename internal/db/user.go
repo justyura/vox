@@ -9,6 +9,8 @@ import (
 	"github.com/lib/pq"
 )
 
+const pgErrUniqueViolation = "23505"
+
 var ErrUserExists = errors.New("user already exists")
 
 func CreateUser(db *sql.DB, id uuid.UUID, email, passwordhash string) error {
@@ -17,7 +19,8 @@ func CreateUser(db *sql.DB, id uuid.UUID, email, passwordhash string) error {
 		VALUES ($1, $2, $3)
 	`, id, email, passwordhash)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == pgErrUniqueViolation {
 			return ErrUserExists
 		}
 		return err

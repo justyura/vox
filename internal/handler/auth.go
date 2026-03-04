@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 )
 
 // SignUp handles user registration by creating a new user in the database and generating a JWT token for authentication.
-func SignUp(database *db.DB, jwtsecret string) gin.HandlerFunc {
+func SignUp(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
@@ -27,7 +28,7 @@ func SignUp(database *db.DB, jwtsecret string) gin.HandlerFunc {
 			return
 		}
 		id := uuid.New()
-		err = db.CreateUser(database.DB, id, email, passwordHash)
+		err = db.CreateUser(database, id, email, passwordHash)
 		if err != nil {
 			if errors.Is(err, db.ErrUserExists) {
 				c.JSON(409, gin.H{
@@ -48,7 +49,7 @@ func SignUp(database *db.DB, jwtsecret string) gin.HandlerFunc {
 }
 
 // Login handles user authentication by verifying the provided email and password against the stored credentials in the database, and generates a JWT token if the authentication is successful.
-func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
+func Login(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
@@ -58,7 +59,7 @@ func Login(database *db.DB, jwtsecret string) gin.HandlerFunc {
 			})
 			return
 		}
-		user, err := db.GetUserByEmail(database.DB, email)
+		user, err := db.GetUserByEmail(database, email)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
 			return
