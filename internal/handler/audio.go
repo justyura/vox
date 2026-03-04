@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,7 +15,18 @@ import (
 	"github.com/justyura/vox/internal/oss"
 )
 
-func Upload(database *db.DB, oss oss.OSS) gin.HandlerFunc {
+var allowed = map[string]bool{
+	".mp3":  true,
+	".wav":  true,
+	".flac": true,
+	".m4a":  true,
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+	".webp": true,
+}
+
+func Upload(database *sql.DB, oss oss.OSS) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		form, err := c.MultipartForm()
 		if err != nil {
@@ -56,7 +68,14 @@ func Upload(database *db.DB, oss oss.OSS) gin.HandlerFunc {
 				return
 			}
 
-			err = db.CreateFile(database.DB, id, file.Filename, userid, objectKey, file.Size, mimeType)
+			err = db.CreateFile(database, db.CreateFileParams{
+				ID:       id,
+				Filename: file.Filename,
+				UserID:   userid,
+				Path:     objectKey,
+				Size:     file.Size,
+				MimeType: mimeType,
+			})
 			if err != nil {
 				log.Printf("failed to save file metadata: %v", err)
 				c.JSON(500, gin.H{
@@ -72,15 +91,5 @@ func Upload(database *db.DB, oss oss.OSS) gin.HandlerFunc {
 
 func isAllowedFile(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
-	allowed := map[string]bool{
-		".mp3":  true,
-		".wav":  true,
-		".flac": true,
-		".m4a":  true,
-		".jpg":  true,
-		".jpeg": true,
-		".png":  true,
-		".webp": true,
-	}
 	return allowed[ext]
 }

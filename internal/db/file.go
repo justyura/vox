@@ -6,13 +6,19 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateFile(db *sql.DB, id uuid.UUID, filename string, userID uuid.UUID, path string, size int64, mimeType string) error {
+type CreateFileParams struct {
+	ID       uuid.UUID
+	Filename string
+	UserID   uuid.UUID
+	Path     string
+	Size     int64
+	MimeType string
+}
+
+func CreateFile(db *sql.DB, params CreateFileParams) error {
 	_, err := db.Exec(`
 		INSERT INTO files (id, filename, user_id, path, size, mime_type)
 		VALUES ($1, $2, $3, $4, $5, $6)
-	`, id, filename, userID, path, size, mimeType)
-	if err != nil {
-		return err
-	}
-	return nil
+	`, params.ID, params.Filename, params.UserID, params.Path, params.Size, params.MimeType)
+	return err
 }
