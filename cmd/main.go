@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := database.Migrate("file://migrations", os.Getenv("DATABASE_URL")); err != nil {
+	if err := db.Migrate("file://migrations", os.Getenv("DATABASE_URL")); err != nil {
 		log.Fatal(err)
 	}
 	r := gin.Default()
