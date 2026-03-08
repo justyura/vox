@@ -33,6 +33,7 @@ func main() {
 	r.GET("/health", handler.Health)
 	r.POST("/signup", handler.SignUp(database, os.Getenv("JWT_SECRET_KEY")))
 	r.POST("/login", handler.Login(database, os.Getenv("JWT_SECRET_KEY")))
+	r.GET(("/file/:key"), handler.Download(store))
 
 	authorized := r.Group("/")
 	authorized.Use(handler.Auth(os.Getenv("JWT_SECRET_KEY")))

@@ -93,3 +93,18 @@ func isAllowedFile(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
 	return allowed[ext]
 }
+
+func Download(oss oss.OSS) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		objectKey := c.Param("key")
+		err := oss.File(objectKey)
+		if err != nil {
+			log.Printf("error Download object: %v because of %v", objectKey, err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "something went wrong",
+			})
+			return
+		}
+		c.String(http.StatusOK, fmt.Sprintln("file download success!"))
+	}
+}

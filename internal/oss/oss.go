@@ -1,7 +1,10 @@
 package oss
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+)
 
 type OSS interface {
 	Upload(file *multipart.FileHeader, objectKey string) (string, error)
+	File(objectKey string) error
 }

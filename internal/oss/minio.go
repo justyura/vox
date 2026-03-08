@@ -2,8 +2,10 @@ package oss
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"mime/multipart"
+	"path/filepath"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -53,4 +55,14 @@ func (s *MinIO) Upload(file *multipart.FileHeader, objectKey string) (string, er
 	log.Printf("File %s uploaded successfully.\n", objectKey)
 
 	return objectKey, nil
+}
+
+func (s *MinIO) File(objectKey string) error {
+	tmpfolder := "/tmp/vox"
+	err := s.client.FGetObject(context.Background(), s.bucket, objectKey, filepath.Join(tmpfolder, objectKey), minio.GetObjectOptions{})
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
 }
