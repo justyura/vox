@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -30,17 +30,21 @@ func main() {
 
 		fh, err := os.Open(filepath.Join("/tmp/vox/", file.Filename))
 		if err != nil {
-			log.Fatal(err)
+			ctx.JSON(500, gin.H{"error": err.Error()})
+			return
 		}
 		defer fh.Close()
 
 		dec := wav.NewDecoder(fh)
 		if buf, err := dec.FullPCMBuffer(); err != nil {
-			log.Fatal(err)
+			ctx.JSON(500, gin.H{"error": err.Error()})
+			return
 		} else if dec.SampleRate != whisper.SampleRate {
-			log.Fatalf("unsupported sample rate: %d", dec.SampleRate)
+			ctx.JSON(500, gin.H{"error": fmt.Sprintf("unsupported sample rate: %d", dec.SampleRate)})
+			return
 		} else if dec.NumChans != 1 {
-			log.Fatalf("unsupported number of channels: %d", dec.NumChans)
+			ctx.JSON(500, gin.H{"error": fmt.Sprintf("unsupported number of channels: %d", dec.NumChans)})
+			return
 		} else {
 			data = buf.AsFloat32Buffer().Data
 		}
