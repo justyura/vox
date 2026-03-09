@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	modelpath := "/home/yura/playground/whisper.cpp/models/tiny.bin"
+	modelpath := "/Users/yura/playground/whisper.cpp/models/tiny.bin"
 	model, err := whisper.New(modelpath)
 	if err != nil {
 		panic(err)
