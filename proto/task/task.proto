@@ -1,0 +1,32 @@
+syntax = "proto3";
+package task;
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/justyura/vox/proto/task";
+
+service TaskService {
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+}
+
+message Task {
+  string id = 1;
+  string user_id = 2;
+  string file_id = 3;
+  string output_format = 4;
+  google.protobuf.Timestamp created_at = 5;
+  string status = 6;
+  string result_key = 7;
+  google.protobuf.Timestamp finished_at = 8;
+  string task_type = 9;
+}
+
+message CreateTaskRequest {
+  string user_id = 1;
+  string file_id = 2;
+  string task_type = 3;
+  string output_format = 4;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
