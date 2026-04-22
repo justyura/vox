@@ -1,0 +1,24 @@
+syntax = "proto3";
+package file;
+option go_package = "github.com/justyura/vox/proto/file";
+
+service FileManager {
+  rpc CheckHealth (CheckHealthRequest) returns (CheckHealthReply) {}
+  rpc ListFiles (ListFilesRequest) returns (ListFilesReply) {}
+}
+
+message CheckHealthRequest { string name = 1; }
+
+message CheckHealthReply { string message = 1; }
+
+message ListFilesRequest { string user_id = 1; }
+
+message ListFilesReply { repeated FileInfo files = 1; }
+
+message FileInfo {
+  string file_id = 1;
+  string file_name = 2;
+  int64 size = 3;
+  string status = 4;
+  string created_at = 5;
+}
