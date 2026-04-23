@@ -2,5 +2,5 @@ files/
 minio-data/
 .env
 playground/
-/cmd/transcriber/transcriber
-/cmd/transcriber/output.wav
+04_transcriberService/transcriber/transcriber
+04_transcriberService/transcriber/output.wav
