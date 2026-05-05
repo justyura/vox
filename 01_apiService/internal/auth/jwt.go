@@ -21,7 +21,7 @@ func CreateJWT(userid, email, jwtSecret string) (string, error) {
 }
 
 func ValidateJWT(tokenString, jwtSecret string) (string, string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrSignatureInvalid
 		}
