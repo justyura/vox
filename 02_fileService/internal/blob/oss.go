@@ -2,10 +2,16 @@ package blob
 
 import (
 	"context"
-	"net/url"
 )
 
+type UploadEvent struct {
+	ID   string
+	Size int64
+	Err  error
+}
+
 type OSS interface {
-	PresignedGet(ctx context.Context, key string) (*url.URL, error)
-	PresignedPut(ctx context.Context, key string) (*url.URL, error)
+	Download(context.Context, string) (string, error)
+	Upload(context.Context, string) (string, error)
+	ListenUpload(context.Context) <-chan UploadEvent
 }
