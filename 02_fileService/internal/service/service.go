@@ -34,11 +34,11 @@ func (fs *FileServer) Upload(ctx context.Context, user uuid.UUID, filename strin
 		return "", fmt.Errorf("create file record: %w", err)
 	}
 
-	if link, err := fs.oss.Upload(ctx, f.FileID.String()); err != nil {
+	link, err := fs.oss.Upload(ctx, f.FileID.String())
+	if err != nil {
 		return "", fmt.Errorf("upload link created err: %w", err)
-	} else {
-		return link, nil
 	}
+	return link, nil
 }
 
 func (fs *FileServer) ListenUpload(ctx context.Context) {
@@ -55,4 +55,8 @@ func (fs *FileServer) ListenUpload(ctx context.Context) {
 
 func (fs *FileServer) Listfiles(ctx context.Context, owner uuid.UUID) ([]model.File, error) {
 	return fs.store.List(ctx, owner)
+}
+
+func (fs *FileServer) Download(ctx context.Context, fileid uuid.UUID) (string, error) {
+	return fs.oss.Download(ctx, fileid.String())
 }

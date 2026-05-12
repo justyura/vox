@@ -12,8 +12,12 @@ type Postgres struct {
 	conn *pgx.Conn
 }
 
-func NewPostgres(conn *pgx.Conn) *Postgres {
-	return &Postgres{conn: conn}
+func NewPostgres(ctx context.Context, databaseURL string) (*Postgres, error) {
+	conn, err := pgx.Connect(ctx, databaseURL)
+	if err != nil {
+		return nil, err
+	}
+	return &Postgres{conn: conn}, nil
 }
 
 func (p *Postgres) Create(ctx context.Context, f *model.File) error {
