@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v7.34.0
-// source: proto/file.proto
+// source: file.proto
 
 package file
 
@@ -19,15 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FileManager_CheckHealth_FullMethodName = "/file.FileManager/CheckHealth"
-	FileManager_ListFiles_FullMethodName   = "/file.FileManager/ListFiles"
+	FileManager_Upload_FullMethodName    = "/file.FileManager/Upload"
+	FileManager_Download_FullMethodName  = "/file.FileManager/Download"
+	FileManager_ListFiles_FullMethodName = "/file.FileManager/ListFiles"
 )
 
 // FileManagerClient is the client API for FileManager service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileManagerClient interface {
-	CheckHealth(ctx context.Context, in *CheckHealthRequest, opts ...grpc.CallOption) (*CheckHealthReply, error)
+	Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadReply, error)
+	Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadReply, error)
 	ListFiles(ctx context.Context, in *ListFilesRequest, opts ...grpc.CallOption) (*ListFilesReply, error)
 }
 
@@ -39,10 +41,20 @@ func NewFileManagerClient(cc grpc.ClientConnInterface) FileManagerClient {
 	return &fileManagerClient{cc}
 }
 
-func (c *fileManagerClient) CheckHealth(ctx context.Context, in *CheckHealthRequest, opts ...grpc.CallOption) (*CheckHealthReply, error) {
+func (c *fileManagerClient) Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CheckHealthReply)
-	err := c.cc.Invoke(ctx, FileManager_CheckHealth_FullMethodName, in, out, cOpts...)
+	out := new(UploadReply)
+	err := c.cc.Invoke(ctx, FileManager_Upload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *fileManagerClient) Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DownloadReply)
+	err := c.cc.Invoke(ctx, FileManager_Download_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +75,8 @@ func (c *fileManagerClient) ListFiles(ctx context.Context, in *ListFilesRequest,
 // All implementations must embed UnimplementedFileManagerServer
 // for forward compatibility.
 type FileManagerServer interface {
-	CheckHealth(context.Context, *CheckHealthRequest) (*CheckHealthReply, error)
+	Upload(context.Context, *UploadRequest) (*UploadReply, error)
+	Download(context.Context, *DownloadRequest) (*DownloadReply, error)
 	ListFiles(context.Context, *ListFilesRequest) (*ListFilesReply, error)
 	mustEmbedUnimplementedFileManagerServer()
 }
@@ -75,8 +88,11 @@ type FileManagerServer interface {
 // pointer dereference when methods are called.
 type UnimplementedFileManagerServer struct{}
 
-func (UnimplementedFileManagerServer) CheckHealth(context.Context, *CheckHealthRequest) (*CheckHealthReply, error) {
-	return nil, status.Error(codes.Unimplemented, "method CheckHealth not implemented")
+func (UnimplementedFileManagerServer) Upload(context.Context, *UploadRequest) (*UploadReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method Upload not implemented")
+}
+func (UnimplementedFileManagerServer) Download(context.Context, *DownloadRequest) (*DownloadReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method Download not implemented")
 }
 func (UnimplementedFileManagerServer) ListFiles(context.Context, *ListFilesRequest) (*ListFilesReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListFiles not implemented")
@@ -102,20 +118,38 @@ func RegisterFileManagerServer(s grpc.ServiceRegistrar, srv FileManagerServer) {
 	s.RegisterService(&FileManager_ServiceDesc, srv)
 }
 
-func _FileManager_CheckHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckHealthRequest)
+func _FileManager_Upload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UploadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(FileManagerServer).CheckHealth(ctx, in)
+		return srv.(FileManagerServer).Upload(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: FileManager_CheckHealth_FullMethodName,
+		FullMethod: FileManager_Upload_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FileManagerServer).CheckHealth(ctx, req.(*CheckHealthRequest))
+		return srv.(FileManagerServer).Upload(ctx, req.(*UploadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FileManager_Download_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DownloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileManagerServer).Download(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileManager_Download_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileManagerServer).Download(ctx, req.(*DownloadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -146,8 +180,12 @@ var FileManager_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FileManagerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CheckHealth",
-			Handler:    _FileManager_CheckHealth_Handler,
+			MethodName: "Upload",
+			Handler:    _FileManager_Upload_Handler,
+		},
+		{
+			MethodName: "Download",
+			Handler:    _FileManager_Download_Handler,
 		},
 		{
 			MethodName: "ListFiles",
@@ -155,5 +193,5 @@ var FileManager_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/file.proto",
+	Metadata: "file.proto",
 }
