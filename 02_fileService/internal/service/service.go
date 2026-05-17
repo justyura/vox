@@ -23,7 +23,7 @@ func NewFileServer(oss blob.OSS, store meta.Store) *FileServer {
 	}
 }
 
-func (fs *FileServer) Upload(ctx context.Context, user uuid.UUID, filename string) (string, error) {
+func (fs *FileServer) Upload(ctx context.Context, user uuid.UUID, filename string) (string, string, error) {
 	f := &model.File{
 		FileID:   uuid.New(),
 		Owner:    user,
@@ -31,14 +31,14 @@ func (fs *FileServer) Upload(ctx context.Context, user uuid.UUID, filename strin
 	}
 
 	if err := fs.store.Create(ctx, f); err != nil {
-		return "", fmt.Errorf("create file record: %w", err)
+		return "", "", fmt.Errorf("create file record: %w", err)
 	}
 
 	link, err := fs.oss.Upload(ctx, f.FileID.String())
 	if err != nil {
-		return "", fmt.Errorf("upload link created err: %w", err)
+		return "", "", fmt.Errorf("upload link created err: %w", err)
 	}
-	return link, nil
+	return f.FileID.String(), link, nil
 }
 
 func (fs *FileServer) ListenUpload(ctx context.Context) {

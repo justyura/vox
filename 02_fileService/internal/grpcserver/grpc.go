@@ -25,11 +25,12 @@ func (gs *GRPCServer) Upload(ctx context.Context, req *filepb.UploadRequest) (*f
 	if err != nil {
 		return nil, err
 	}
-	link, err := gs.fs.Upload(ctx, userid, req.Filename)
+	fileid, link, err := gs.fs.Upload(ctx, userid, req.Filename)
 	if err != nil {
 		return nil, err
 	}
 	return &filepb.UploadReply{
+		FileId:    fileid,
 		UploadUrl: link,
 	}, nil
 }

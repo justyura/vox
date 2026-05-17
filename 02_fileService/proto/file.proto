@@ -16,6 +16,7 @@ message UploadRequest {
 
 message UploadReply {
   string upload_url = 1;
+  string file_id = 2;
 }
 
 message DownloadRequest {
