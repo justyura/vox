@@ -1,18 +1,18 @@
 package handler
 
 import (
-	"database/sql"
 	"errors"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/justyura/vox/internal/auth"
-	"github.com/justyura/vox/internal/db"
+	"github.com/justyura/vox/01_apiService/internal/auth"
+	"github.com/justyura/vox/01_apiService/internal/meta"
+	"github.com/justyura/vox/01_apiService/internal/model"
 )
 
 // SignUp handles user registration by creating a new user in the database and generating a JWT token for authentication.
-func SignUp(database *sql.DB, jwtsecret string) gin.HandlerFunc {
+func SignUp(store meta.Store, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
@@ -27,10 +27,14 @@ func SignUp(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 			c.JSON(500, gin.H{"error": "internal error"})
 			return
 		}
-		id := uuid.New()
-		err = db.CreateUser(database, id, email, passwordHash)
+		m := &model.User{
+			ID:       uuid.New(),
+			Email:    email,
+			Password: passwordHash,
+		}
+		err = store.CreateUser(c.Request.Context(), m)
 		if err != nil {
-			if errors.Is(err, db.ErrUserExists) {
+			if errors.Is(err, meta.ErrUserExists) {
 				c.JSON(409, gin.H{
 					"error": "email already registered",
 				})
@@ -39,7 +43,7 @@ func SignUp(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 			c.JSON(500, gin.H{"error": "internal error"})
 			return
 		}
-		jwt, err := auth.CreateJWT(id.String(), email, jwtsecret)
+		jwt, err := auth.CreateJWT(m.ID.String(), m.Email, jwtsecret)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "internal error"})
 			return
@@ -49,7 +53,7 @@ func SignUp(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 }
 
 // Login handles user authentication by verifying the provided email and password against the stored credentials in the database, and generates a JWT token if the authentication is successful.
-func Login(database *sql.DB, jwtsecret string) gin.HandlerFunc {
+func Login(store meta.Store, jwtsecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password")
@@ -59,15 +63,16 @@ func Login(database *sql.DB, jwtsecret string) gin.HandlerFunc {
 			})
 			return
 		}
-		user, err := db.GetUserByEmail(database, email)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "internal error"})
-			return
-		}
+		user, err := store.GetUserByEmail(c.Request.Context(), email)
 		if user == nil {
 			c.JSON(401, gin.H{"error": "invalid credentials"})
 			return
 		}
+		if err != nil {
+			c.JSON(500, gin.H{"error": "internal error"})
+			return
+		}
+
 		if !auth.CheckPassword(user.Password, password) {
 			c.JSON(401, gin.H{"error": "invalid credentials"})
 			return
