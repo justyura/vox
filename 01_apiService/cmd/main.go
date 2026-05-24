@@ -1,46 +1,41 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/justyura/vox/internal/db"
-	"github.com/justyura/vox/internal/handler"
-	"github.com/justyura/vox/internal/oss"
+	"github.com/justyura/vox/01_apiService/internal/handler"
+	"github.com/justyura/vox/01_apiService/internal/meta"
 )
 
 func main() {
-	godotenv.Load()
-	store, err := oss.NewMinIOSS(
-		os.Getenv("MINIO_ENDPOINT"),
-		os.Getenv("MINIO_ACCESS_KEY"),
-		os.Getenv("MINIO_SECRET_KEY"),
-		os.Getenv("MINIO_BUCKET"))
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+
+	store, err := meta.NewPostgres(ctx, os.Getenv("USER_DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	database, err := db.Open("postgres", os.Getenv("DATABASE_URL"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := db.Migrate("file://migrations", os.Getenv("DATABASE_URL")); err != nil {
-		log.Fatal(err)
-	}
+
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+
 	r := gin.Default()
 
-	r.GET("/health", handler.Health)
-	r.POST("/signup", handler.SignUp(database, os.Getenv("JWT_SECRET_KEY")))
-	r.POST("/login", handler.Login(database, os.Getenv("JWT_SECRET_KEY")))
-	r.GET(("/file/:key"), handler.Download(store))
+	r.POST("/signup", handler.SignUp(store, jwtSecret))
+	r.POST("/login", handler.Login(store, jwtSecret))
 
 	authorized := r.Group("/")
-	authorized.Use(handler.Auth(os.Getenv("JWT_SECRET_KEY")))
+	authorized.Use(handler.Auth(jwtSecret))
 	{
 		authorized.GET("/whoami", handler.Whoami())
-		authorized.POST("/upload", handler.Upload(database, store))
 	}
 
-	r.Run(":8081")
+	if err := r.Run(":8081"); err != nil {
+		log.Fatal(err)
+	}
 }
