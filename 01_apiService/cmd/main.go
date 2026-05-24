@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 	"github.com/justyura/vox/01_apiService/internal/handler"
 	"github.com/justyura/vox/01_apiService/internal/meta"
+	"github.com/justyura/vox/01_apiService/internal/migrations"
 )
 
 func main() {
@@ -16,8 +19,18 @@ func main() {
 		log.Fatal(err)
 	}
 	ctx := context.Background()
+	dbURL := os.Getenv("USER_DATABASE_URL")
 
-	store, err := meta.NewPostgres(ctx, os.Getenv("USER_DATABASE_URL"))
+	sqlDB, err := sql.Open("pgx", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := migrations.RunMigrations(sqlDB); err != nil {
+		log.Fatal(err)
+	}
+	sqlDB.Close()
+
+	store, err := meta.NewPostgres(ctx, dbURL)
 	if err != nil {
 		log.Fatal(err)
 	}
