@@ -12,6 +12,9 @@ import (
 	"github.com/justyura/vox/01_apiService/internal/handler"
 	"github.com/justyura/vox/01_apiService/internal/meta"
 	"github.com/justyura/vox/01_apiService/internal/migrations"
+	filepb "github.com/justyura/vox/02_fileService/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -35,6 +38,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	conn, err := grpc.NewClient(os.Getenv("FILE_SERVICE_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+	fileClient := filepb.NewFileManagerClient(conn)
+
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 
 	r := gin.Default()
@@ -46,6 +56,9 @@ func main() {
 	authorized.Use(handler.Auth(jwtSecret))
 	{
 		authorized.GET("/whoami", handler.Whoami())
+		authorized.POST("/upload", handler.Upload(fileClient))
+		authorized.GET("/download/:fileid", handler.Download(fileClient))
+		authorized.GET("/listfiles", handler.ListFiles(fileClient))
 	}
 
 	if err := r.Run(":8081"); err != nil {
