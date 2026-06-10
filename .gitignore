@@ -1,7 +1,8 @@
 files/
 minio-data/
 .env
+.DS_Store
 playground/
-04_transcriberService/transcriber/transcriber
-04_transcriberService/transcriber/output.wav
+04_workerService/internal/transcriber/transcriber
+04_workerService/internal/transcriber/output.wav
 TODO.md
