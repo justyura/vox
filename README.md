@@ -1,14 +1,29 @@
-Responsibility:
+- Create a task
+    API (fileid, userid, type) → Task Server 
+                                    (taskid) CRUD
+                                    DB design | status, result_fileId
 
-API service:
-- Whoami
-- SignUp
-- Login
-- Auth
+- Process the task | Worker (interface)
+                input
+                   ↓
+                Worker
+                   ↓
+                output
 
-fileManager service:
-- CheckHealth
+- Transcriber implement the interface
+    <!-- handle the task(core logic) -->
+        Download the file via FILEID from FILE SERVER
+        Process
+            E.P.1. go → cgo → whisper.cpp →  result_file
+        RESULT
+    <!-- upload the result to file server -->
+        file server → Upload(filename, userid) → (fileid, link)
+        upload via the link
 
-<!-- TODO: -->
-Build fileManager service
-already have playground code → grpc method → add more features(DB)
+    <!-- tell the task server -->
+        fileid → Update in the task server
+                Update(taskid, result_fileId)
+
+- why seperate Tasks server and Worker, for future microservices design:
+    - Soc
+    - can duplicated
