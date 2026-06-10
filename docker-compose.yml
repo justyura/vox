@@ -31,8 +31,21 @@ services:
     volumes:
       - filedata:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: vox
+      RABBITMQ_DEFAULT_PASS: vox
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+
 volumes:
   userdata:
   filedata:
+  rabbitmq:
 
 
