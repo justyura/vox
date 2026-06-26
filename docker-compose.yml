@@ -31,6 +31,19 @@ services:
     volumes:
       - filedata:/var/lib/postgresql/data
 
+  taskdb:
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: vox
+      POSTGRES_PASSWORD: vox
+      POSTGRES_DB: vox
+    volumes:
+      - taskdata:/var/lib/postgresql/data
+
+
   rabbitmq:
     image: rabbitmq:management-alpine
     restart: always
@@ -46,6 +59,7 @@ services:
 volumes:
   userdata:
   filedata:
+  taskdata:
   rabbitmq:
 
 

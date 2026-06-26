@@ -1,57 +1,29 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
+	"database/sql"
 	"log"
-	"time"
+	"os"
 
-	amqp "github.com/rabbitmq/amqp091-go"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
+	"github.com/justyura/vox/03_taskService/internal/migrations"
 )
 
-const exchangeName = "vox.tasks"
-
 func main() {
-	conn, err := amqp.Dial("amqp://vox:vox@192.168.0.124:5672")
-	failOnErr(err, "Failed to connect to Rabbitmq")
-
-	ch, err := conn.Channel()
-	failOnErr(err, "Failed to open a Channel")
-
-	err = ch.ExchangeDeclare(exchangeName, "direct", true, false, false, false, nil)
-
-	for _, q := range []string{"transcribe", "summarize"} {
-		_, err := ch.QueueDeclare(q, true, false, false, false, nil)
-		failOnErr(err, "Failed to decalre queue "+q)
-
-		err = ch.QueueBind(q, q, exchangeName, false, nil)
-		failOnErr(err, "Failed to bind queue "+q)
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
 	}
+	dbURL := os.Getenv("DATABASE_URL")
 
-	task := TranscribeTask{TaskID: "task-001", URL: "http://download-me"}
-	body, err := json.Marshal(task)
-	failOnErr(err, "Failed to marshal task")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err = ch.PublishWithContext(ctx, exchangeName, "transcribe", false, false, amqp.Publishing{
-		ContentType:  "application/json",
-		DeliveryMode: amqp.Persistent,
-		Body:         body,
-	})
-
-	failOnErr(err, "Failed to Publish msg")
-
-	log.Printf("Publish success")
-}
-
-type TranscribeTask struct {
-	TaskID string
-	URL    string
-}
-
-func failOnErr(err error, msg string) {
+	sqlDB, err := sql.Open("pgx", dbURL)
 	if err != nil {
-		log.Panicf("%s: %s", err, msg)
+		log.Fatal(err)
 	}
+	defer sqlDB.Close()
+
+	if err := migrations.RunMigrations(sqlDB); err != nil {
+		log.Fatal(err)
+	}
+	log.Println("migrations applied")
 }
