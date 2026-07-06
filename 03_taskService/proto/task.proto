@@ -2,31 +2,57 @@ syntax = "proto3";
 package task;
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/justyura/vox/proto/task";
+option go_package = "github.com/justyura/vox/03_taskService/proto;task";
 
-service TaskService {
+service TaskManager {
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
+  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
 }
 
 message Task {
-  string id = 1;
-  string user_id = 2;
-  string file_id = 3;
-  string output_format = 4;
-  google.protobuf.Timestamp created_at = 5;
+  string task_id = 1;
+  string type = 2;
+  string user_id = 3;
+  string input_file_id = 4;
+  string output_file_id = 5;
   string status = 6;
-  string result_key = 7;
+  google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp finished_at = 8;
-  string task_type = 9;
 }
 
 message CreateTaskRequest {
   string user_id = 1;
-  string file_id = 2;
-  string task_type = 3;
-  string output_format = 4;
+  string input_file_id = 2;
+  string type = 3;
 }
 
 message CreateTaskResponse {
+  string task_id = 1;
+}
+
+message ListTasksRequest {
+  string user_id = 1;
+}
+
+message ListTasksResponse {
+  repeated Task tasks = 1;
+}
+
+message GetTaskRequest {
+  string task_id = 1;
+
+}
+
+message GetTaskResponse {
   Task task = 1;
+}
+
+message UpdateStatusRequest {
+ string task_id = 1;
+ string status = 2;
+}
+
+message UpdateStatusResponse {
 }
