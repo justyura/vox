@@ -16,6 +16,10 @@ type TaskServer struct {
 	ds distributor.Distributor
 }
 
+func NewTaskServer(st meta.Store, fc client.FileClient, ds distributor.Distributor) *TaskServer {
+	return &TaskServer{st: st, fc: fc, ds: ds}
+}
+
 func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UUID, taskType string) (uuid.UUID, error) {
 	taskID := uuid.New()
 	task := &model.Task{
@@ -34,7 +38,9 @@ func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UU
 	if err := t.ds.Distribute(ctx, taskID, inputURL, outputURL, taskType); err != nil {
 		return taskID, err
 	}
-	t.UpdateStatus(ctx, taskID, model.StatusDispatched)
+	if err := t.UpdateStatus(ctx, taskID, model.StatusDispatched); err != nil {
+		return taskID, err
+	}
 	return taskID, nil
 }
 
