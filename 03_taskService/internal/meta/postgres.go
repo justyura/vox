@@ -29,7 +29,11 @@ func (p *Postgres) Create(ctx context.Context, t *model.Task) error {
 }
 
 func (p *Postgres) UpdateStatus(ctx context.Context, taskID uuid.UUID, status string) error {
-	_, err := p.conn.Exec(ctx, "UPDATE tasks SET status=$2, finished_at = CASE WHEN $2 IN ('completed', 'failed') THEN NOW() ELSE finished_at END WHERE id=$1", taskID, status)
+	sql := "UPDATE tasks SET status=$2 WHERE id=$1"
+	if status == model.StatusCompleted || status == model.StatusFailed {
+		sql = "UPDATE tasks SET status=$2, finished_at=NOW() WHERE id=$1"
+	}
+	_, err := p.conn.Exec(ctx, sql, taskID, status)
 	return err
 }
 
