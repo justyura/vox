@@ -1,119 +1,64 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"io"
+	"context"
+	"encoding/json"
 	"log"
-	"net/http"
 	"os"
-	"strings"
-	"time"
 
-	"github.com/ggerganov/whisper.cpp/bindings/go/pkg/whisper"
-	"github.com/go-audio/wav"
+	"github.com/joho/godotenv"
+	taskpb "github.com/justyura/vox/03_taskService/proto"
+	"github.com/justyura/vox/04_transcriberService/internal/reporter"
+	"github.com/justyura/vox/04_transcriberService/internal/transcriber"
+	"github.com/justyura/vox/04_transcriberService/internal/worker"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
-	// Preload the model
-	modelPath := flag.String("model", "/Users/yura/personal/whisper.cpp/bindings/go/models/ggml-small.en.bin", "path to a ggml whisper model")
-
-	// Download from Presigned URL
-	// url := flag.String("url", "", "input")
-	flag.Parse()
-
-	// if err := DownloadFromURL(*url); err != nil {
-	// 	log.Fatal("failed to download")
-	// }
-	audioPath := "../jfk.wav"
-	if flag.NArg() > 0 {
-		audioPath = flag.Arg(0)
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
 	}
+	ts, err := transcriber.New(os.Getenv("MODEL_PATH"))
+	if err != nil {
+		log.Fatalf("failed to load model: %v", err)
+	}
+	conn, err := grpc.NewClient(os.Getenv("TASK_SERVER_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal("cannot initiate grpc client")
+	}
+	rp := reporter.New(taskpb.NewTaskManagerClient(conn))
 
-	// Transcribe the audio
-	text, err := transcribe(*modelPath, audioPath)
+	w := worker.NewWorker(ts, rp)
+
+	mqconn, err := amqp.Dial(os.Getenv("RABBITMQ_ADDR"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("\n=== transcription ===")
-	fmt.Println(text)
-}
-
-// transcribe loads the model, decodes a 16kHz mono PCM WAV into float32
-// samples, runs whisper over it, and returns the joined segment text.
-func transcribe(modelPath, audioPath string) (string, error) {
-	model, err := whisper.New(modelPath)
+	ch, err := mqconn.Channel()
 	if err != nil {
-		return "", fmt.Errorf("load model %q: %w", modelPath, err)
+		log.Fatal(err)
 	}
-	defer model.Close()
-
-	ctx, err := model.NewContext()
+	if err := ch.Qos(1, 0, false); err != nil {
+		log.Fatal(err)
+	}
+	msgs, err := ch.Consume("transcribe", "", false, false, false, false, nil)
 	if err != nil {
-		return "", fmt.Errorf("new context: %w", err)
+		log.Fatal(err)
 	}
 
-	data, err := readWAV(audioPath)
-	if err != nil {
-		return "", err
+	log.Println("worker ready, waiting for jobs ... ")
+	for d := range msgs {
+		var msg worker.TaskMessage
+		if err := json.Unmarshal(d.Body, &msg); err != nil {
+			log.Printf("bad message, discard: %v", err)
+			d.Ack(false)
+			continue
+		}
+		if err := w.Handle(context.Background(), msg); err != nil {
+			log.Printf("job %s failed: %v", msg.JobID, err)
+		}
+		d.Ack(false)
 	}
-	if len(data) == 0 {
-		return "", fmt.Errorf("empty audio data")
-	}
-
-	var b strings.Builder
-	cb := func(seg whisper.Segment) {
-		log.Printf("[%6s -> %6s] %s", seg.Start.Truncate(time.Millisecond), seg.End.Truncate(time.Millisecond), seg.Text)
-		b.WriteString(seg.Text)
-	}
-	if err := ctx.Process(data, nil, cb, nil); err != nil {
-		return "", fmt.Errorf("process: %w", err)
-	}
-	return strings.TrimSpace(b.String()), nil
-}
-
-// readWAV decodes a WAV file into float32 samples, requiring the format
-// whisper expects: 16kHz, single channel.
-func readWAV(path string) ([]float32, error) {
-	fh, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("open %q: %w", path, err)
-	}
-	defer fh.Close()
-
-	dec := wav.NewDecoder(fh)
-	buf, err := dec.FullPCMBuffer()
-	if err != nil {
-		return nil, fmt.Errorf("decode wav: %w", err)
-	}
-	if dec.SampleRate != whisper.SampleRate {
-		return nil, fmt.Errorf("unsupported sample rate %d (want %d); re-encode with: ffmpeg -i in -ar 16000 -ac 1 out.wav", dec.SampleRate, whisper.SampleRate)
-	}
-	if dec.NumChans != 1 {
-		return nil, fmt.Errorf("unsupported channel count %d (want mono)", dec.NumChans)
-	}
-	return buf.AsFloat32Buffer().Data, nil
-}
-
-func DownloadFromURL(url string) error {
-	tmpfile, err := os.Create("output")
-	if err != nil {
-		return err
-	}
-	defer tmpfile.Close()
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	_, err = io.Copy(tmpfile, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	log.Println("success download from url")
-
-	return nil
 }
