@@ -12,9 +12,10 @@ import (
 
 type MinioClient struct {
 	api *minio.Client
+	ttl time.Duration
 }
 
-func NewMinioClient(endpoint, accessKey, secretAccessKey string) (*MinioClient, error) {
+func NewMinioClient(endpoint, accessKey, secretAccessKey string, ttl time.Duration) (*MinioClient, error) {
 	api, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretAccessKey, ""),
 		Secure: false,
@@ -24,11 +25,12 @@ func NewMinioClient(endpoint, accessKey, secretAccessKey string) (*MinioClient, 
 	}
 	return &MinioClient{
 		api: api,
+		ttl: ttl,
 	}, nil
 }
 
 func (mc *MinioClient) Download(ctx context.Context, fileid string) (string, error) {
-	if url, err := mc.api.PresignedGetObject(ctx, "vox", fileid, time.Hour, nil); err != nil {
+	if url, err := mc.api.PresignedGetObject(ctx, "vox", fileid, mc.ttl, nil); err != nil {
 		return "", err
 	} else {
 		return url.String(), nil
@@ -36,7 +38,7 @@ func (mc *MinioClient) Download(ctx context.Context, fileid string) (string, err
 }
 
 func (mc *MinioClient) Upload(ctx context.Context, fileID string) (string, error) {
-	if link, err := mc.api.PresignedPutObject(ctx, "vox", fileID, time.Hour); err != nil {
+	if link, err := mc.api.PresignedPutObject(ctx, "vox", fileID, mc.ttl); err != nil {
 		return "", err
 	} else {
 		return link.String(), nil

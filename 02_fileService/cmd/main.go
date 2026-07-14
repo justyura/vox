@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/justyura/vox/02_fileService/internal/blob"
@@ -28,7 +29,11 @@ func main() {
 	ctx := context.Background()
 
 	// Dependency injection
-	minio, err := blob.NewMinioClient(os.Getenv("MINIO_ENDPOINT"), os.Getenv("MINIO_ACCESSKEY"), os.Getenv("MINIO_SECRETACCESSKEY"))
+	ttl, err := time.ParseDuration(os.Getenv("PRESIGN_TTL"))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	minio, err := blob.NewMinioClient(os.Getenv("MINIO_ENDPOINT"), os.Getenv("MINIO_ACCESSKEY"), os.Getenv("MINIO_SECRETACCESSKEY"), ttl)
 	if err != nil {
 		log.Fatal(err)
 	}
