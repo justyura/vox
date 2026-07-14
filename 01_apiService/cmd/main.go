@@ -13,6 +13,7 @@ import (
 	"github.com/justyura/vox/01_apiService/internal/meta"
 	"github.com/justyura/vox/01_apiService/internal/migrations"
 	filepb "github.com/justyura/vox/02_fileService/proto"
+	taskpb "github.com/justyura/vox/03_taskService/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -38,12 +39,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conn, err := grpc.NewClient(os.Getenv("FILE_SERVICE_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	fileConn, err := grpc.NewClient(os.Getenv("FILE_SERVICE_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
-	fileClient := filepb.NewFileManagerClient(conn)
+	defer fileConn.Close()
+	fileClient := filepb.NewFileManagerClient(fileConn)
+
+	taskConn, err := grpc.NewClient(os.Getenv("TASK_SERVICE_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer taskConn.Close()
+	taskClient := taskpb.NewTaskManagerClient(taskConn)
 
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 
@@ -59,6 +67,9 @@ func main() {
 		authorized.POST("/upload", handler.Upload(fileClient))
 		authorized.GET("/download/:fileid", handler.Download(fileClient))
 		authorized.GET("/listfiles", handler.ListFiles(fileClient))
+		authorized.POST("/tasks", handler.CreateTask(taskClient))
+		authorized.GET("/tasks", handler.ListTasks(taskClient))
+		authorized.GET("/tasks/:taskid", handler.GetTask(taskClient))
 	}
 
 	if err := r.Run(":8081"); err != nil {
