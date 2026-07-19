@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	taskpb "github.com/justyura/vox/03_taskService/proto"
@@ -32,20 +34,32 @@ func main() {
 
 	w := worker.NewWorker(ts, rp)
 
-	mqconn, err := amqp.Dial(os.Getenv("RABBITMQ_ADDR"))
-	if err != nil {
-		log.Fatal(err)
+	addr := os.Getenv("RABBITMQ_ADDR")
+	for {
+		if err := consume(addr, w); err != nil {
+			log.Printf("consume %v", err)
+		}
+		log.Println("connection lost, reconnecting in 5s...")
+		time.Sleep(5 * time.Second)
 	}
+}
+
+func consume(addr string, w *worker.Worker) error {
+	mqconn, err := amqp.Dial(addr)
+	if err != nil {
+		return err
+	}
+	defer mqconn.Close()
 	ch, err := mqconn.Channel()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	if err := ch.Qos(1, 0, false); err != nil {
-		log.Fatal(err)
+		return err
 	}
 	msgs, err := ch.Consume("transcribe", "", false, false, false, false, nil)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	log.Println("worker ready, waiting for jobs ... ")
@@ -61,4 +75,5 @@ func main() {
 		}
 		d.Ack(false)
 	}
+	return fmt.Errorf("connection lost")
 }
