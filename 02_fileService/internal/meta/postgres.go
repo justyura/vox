@@ -4,16 +4,16 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/justyura/vox/02_fileService/internal/model"
 )
 
 type Postgres struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func NewPostgres(ctx context.Context, databaseURL string) (*Postgres, error) {
-	conn, err := pgx.Connect(ctx, databaseURL)
+	conn, err := pgxpool.New(ctx, databaseURL)
 	if err != nil {
 		return nil, err
 	}
