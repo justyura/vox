@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>vox</title>
+</head>
+
+<body>
+  <h1>Vox</h1>
+
+  <form id="login-form">
+    <ul>
+      <li>
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" />
+      </li>
+      <li>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" />
+      </li>
+    </ul>
+    <button id="login-btn">Login</button>
+    <span id="login-state"></span>
+  </form>
+
+  <button id="logout">Logout</button>
+
+  <hr>
+
+  <div id="upload-card">
+    <h3>Upload</h3>
+    <input type="file" id="file-input" accept=".wav" />
+    <button id="upload-btn">Upload and transcribe</button>
+    <span id="upload-state"></span>
+  </div>
+
+  <hr>
+
+  <div id="tasks-card">
+    <h3>Task</h3>
+    <span id="task-state"></span>
+    <h3>Transcript</h3>
+    <pre id="transcript"></pre>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('token') || ''
+    if (token) {
+      document.getElementById('login-state').textContent = 'logged in'
+    }
+
+    document.getElementById('logout').addEventListener('click', () => {
+      localStorage.removeItem('token')
+      token = ''
+      document.getElementById('login-state').textContent = ''
+    })
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+
+      const resp = await fetch('/login', {
+        method: 'POST',
+        body: new URLSearchParams({email: email, password: password})
+      })
+      const data = await resp.json()
+
+      if (resp.ok) {
+        token = data.token
+        localStorage.setItem('token', token)
+        document.getElementById('login-state').textContent = 'logged in'
+      } else {
+        document.getElementById('login-state').textContent = data.error
+      }
+    })
+
+    let fileID = ''
+
+    document.getElementById('upload-btn').addEventListener('click', async () => {
+      const state = document.getElementById('upload-state')
+
+      const file = document.getElementById('file-input').files[0]
+      if (!file) {
+        state.textContent = 'select a file first'
+        return
+      }
+
+      const resp = await fetch('/upload', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + token},
+        body: new URLSearchParams({filename: file.name})
+      })
+      const data = await resp.json()
+      if (!resp.ok) {
+        state.textContent = 'upload request failed: ' + data.error
+        return
+      }
+
+      state.textContent = 'uploading...'
+      const put = await fetch(data.upload_url, {method: 'PUT', body: file})
+
+      if (put.ok) {
+        fileID = data.file_id
+        state.textContent = 'uploaded: ' + file.name
+        createTask(fileID)
+      } else {
+        state.textContent = 'upload failed: ' + put.status
+      }
+    })
+
+    async function createTask(fid) {
+      const state = document.getElementById('task-state')
+
+      const resp = await fetch('/tasks', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({input_file_id: fid, type: 'transcribe'})
+      })
+      const data = await resp.json()
+      if (!resp.ok) {
+        state.textContent = 'create task failed: ' + data.error
+        return
+      }
+
+      state.textContent = 'transcribing...'
+      const timer = setInterval(async () => {
+        const r = await fetch('/tasks/' + data.task_id, {
+          headers: {'Authorization': 'Bearer ' + token}
+        })
+        const t = (await r.json()).task
+
+        if (t.status === 'completed') {
+          clearInterval(timer)
+          state.textContent = 'completed'
+          showTranscript(t.output_file_id)
+        } else if (t.status === 'failed') {
+          clearInterval(timer)
+          state.textContent = 'transcription failed'
+        }
+      }, 2000)
+    }
+
+    async function showTranscript(outputID) {
+      const resp = await fetch('/download/' + outputID, {
+        headers: {'Authorization': 'Bearer ' + token}
+      })
+      const url = (await resp.json()).download_url
+      const text = await (await fetch(url)).text()
+      document.getElementById('transcript').textContent = text
+    }
+  </script>
+</body>
+
+</html>

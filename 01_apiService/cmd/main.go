@@ -56,6 +56,7 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 
 	r := gin.Default()
+	r.StaticFile("/", "../static/index.html")
 
 	r.POST("/signup", handler.SignUp(store, jwtSecret))
 	r.POST("/login", handler.Login(store, jwtSecret))
