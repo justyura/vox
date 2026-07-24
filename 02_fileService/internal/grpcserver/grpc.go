@@ -2,11 +2,15 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/justyura/vox/02_fileService/internal/model"
 	"github.com/justyura/vox/02_fileService/internal/service"
 	filepb "github.com/justyura/vox/02_fileService/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GRPCServer struct {
@@ -38,11 +42,18 @@ func (gs *GRPCServer) Upload(ctx context.Context, req *filepb.UploadRequest) (*f
 func (gs *GRPCServer) Download(ctx context.Context, req *filepb.DownloadRequest) (*filepb.DownloadReply, error) {
 	fileid, err := uuid.Parse(req.FileId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, "invalid file_id")
 	}
-	link, err := gs.fs.Download(ctx, fileid)
+	userid, err := uuid.Parse(req.UserId)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, "invalid user_id")
+	}
+	link, err := gs.fs.Download(ctx, userid, fileid)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "file not found")
+		}
+		return nil, status.Error(codes.Internal, "download failed")
 	}
 	return &filepb.DownloadReply{
 		DownloadUrl: link,

@@ -16,7 +16,7 @@ func NewGRPCClient(c filepb.FileManagerClient) *GRPCClient {
 }
 
 func (g *GRPCClient) Request(ctx context.Context, userID, inputFileID uuid.UUID, resultFileName string) (string, string, uuid.UUID, error) {
-	dl, err := g.c.Download(ctx, &filepb.DownloadRequest{FileId: inputFileID.String()})
+	dl, err := g.c.Download(ctx, &filepb.DownloadRequest{FileId: inputFileID.String(), UserId: userID.String()})
 	if err != nil {
 		return "", "", uuid.Nil, err
 	}

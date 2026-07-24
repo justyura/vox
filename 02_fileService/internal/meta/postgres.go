@@ -2,8 +2,10 @@ package meta
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/justyura/vox/02_fileService/internal/model"
 )
@@ -46,4 +48,14 @@ func (p *Postgres) List(ctx context.Context, owner uuid.UUID) ([]model.File, err
 		files = append(files, f)
 	}
 	return files, rows.Err()
+}
+
+func (p *Postgres) Get(ctx context.Context, fileID uuid.UUID) (model.File, error) {
+	var f model.File
+	err := p.conn.QueryRow(ctx, "SELECT file_id, owner, filename, status, size, created_at FROM files WHERE file_id=$1", fileID).Scan(&f.FileID, &f.Owner, &f.FileName, &f.Status, &f.Size, &f.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return model.File{}, model.ErrNotFound
+	}
+
+	return f, err
 }

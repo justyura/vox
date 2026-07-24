@@ -128,6 +128,7 @@ func (x *UploadReply) GetFileId() string {
 type DownloadRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	FileId        string                 `protobuf:"bytes,1,opt,name=file_id,json=fileId,proto3" json:"file_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -165,6 +166,13 @@ func (*DownloadRequest) Descriptor() ([]byte, []int) {
 func (x *DownloadRequest) GetFileId() string {
 	if x != nil {
 		return x.FileId
+	}
+	return ""
+}
+
+func (x *DownloadRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -397,9 +405,10 @@ const file_file_proto_rawDesc = "" +
 	"\vUploadReply\x12\x1d\n" +
 	"\n" +
 	"upload_url\x18\x01 \x01(\tR\tuploadUrl\x12\x17\n" +
-	"\afile_id\x18\x02 \x01(\tR\x06fileId\"*\n" +
+	"\afile_id\x18\x02 \x01(\tR\x06fileId\"C\n" +
 	"\x0fDownloadRequest\x12\x17\n" +
-	"\afile_id\x18\x01 \x01(\tR\x06fileId\"2\n" +
+	"\afile_id\x18\x01 \x01(\tR\x06fileId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"2\n" +
 	"\rDownloadReply\x12!\n" +
 	"\fdownload_url\x18\x01 \x01(\tR\vdownloadUrl\"+\n" +
 	"\x10ListFilesRequest\x12\x17\n" +

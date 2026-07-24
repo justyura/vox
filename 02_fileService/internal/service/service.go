@@ -57,6 +57,13 @@ func (fs *FileServer) Listfiles(ctx context.Context, owner uuid.UUID) ([]model.F
 	return fs.store.List(ctx, owner)
 }
 
-func (fs *FileServer) Download(ctx context.Context, fileid uuid.UUID) (string, error) {
+func (fs *FileServer) Download(ctx context.Context, user, fileid uuid.UUID) (string, error) {
+	f, err := fs.store.Get(ctx, fileid)
+	if err != nil {
+		return "", err
+	}
+	if !f.CanAccess(user) {
+		return "", model.ErrNotFound
+	}
 	return fs.oss.Download(ctx, fileid.String())
 }

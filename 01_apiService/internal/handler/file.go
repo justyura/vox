@@ -3,6 +3,8 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	filepb "github.com/justyura/vox/02_fileService/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func Upload(client filepb.FileManagerClient) gin.HandlerFunc {
@@ -38,10 +40,18 @@ func Download(client filepb.FileManagerClient) gin.HandlerFunc {
 			})
 			return
 		}
+		userid := c.MustGet("user_id").(string)
 		reply, err := client.Download(c.Request.Context(), &filepb.DownloadRequest{
+			UserId: userid,
 			FileId: fileid,
 		})
 		if err != nil {
+			if status.Code(err) == codes.NotFound {
+				c.JSON(404, gin.H{
+					"error": "file not found",
+				})
+				return
+			}
 			c.JSON(500, gin.H{
 				"error": "download failed",
 			})

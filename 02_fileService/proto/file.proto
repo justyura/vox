@@ -21,6 +21,7 @@ message UploadReply {
 
 message DownloadRequest {
   string file_id = 1;
+  string user_id = 2;
 }
 
 message DownloadReply {
