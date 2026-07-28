@@ -7,6 +7,8 @@ import (
 	"github.com/justyura/vox/03_taskService/internal/model"
 	"github.com/justyura/vox/03_taskService/internal/service"
 	taskpb "github.com/justyura/vox/03_taskService/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -74,8 +76,11 @@ func (gs *GRPCServer) UpdateStatus(ctx context.Context, req *taskpb.UpdateStatus
 	if err != nil {
 		return nil, err
 	}
-	status := req.Status
-	if err := gs.ts.UpdateStatus(ctx, taskid, status); err != nil {
+	s := req.Status
+	if s != model.StatusCompleted && s != model.StatusFailed {
+		return nil, status.Error(codes.InvalidArgument, "invalid status")
+	}
+	if err := gs.ts.UpdateStatus(ctx, taskid, s); err != nil {
 		return nil, err
 	}
 	return &taskpb.UpdateStatusResponse{}, nil

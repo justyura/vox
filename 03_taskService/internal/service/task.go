@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/justyura/vox/03_taskService/internal/distributor"
@@ -54,8 +53,5 @@ func (t *TaskServer) GetTask(ctx context.Context, taskid uuid.UUID) (model.Task,
 }
 
 func (t *TaskServer) UpdateStatus(ctx context.Context, jobID uuid.UUID, status string) error {
-	if status != model.StatusCompleted && status != model.StatusFailed {
-		return fmt.Errorf("invalid status: %s", status)
-	}
 	return t.st.UpdateStatus(ctx, jobID, status)
 }
