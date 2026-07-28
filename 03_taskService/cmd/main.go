@@ -24,9 +24,7 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
+	_ = godotenv.Load()
 	dbURL := os.Getenv("DATABASE_URL")
 
 	sqlDB, err := sql.Open("pgx", dbURL)

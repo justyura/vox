@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// Prepare the env
-	loadEnv()
+	_ = godotenv.Load()
 	ctx := context.Background()
 
 	// Dependency injection
@@ -55,11 +55,5 @@ func main() {
 	log.Println("grpc server is ready")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalln(err)
-	}
-}
-
-func loadEnv() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
 	}
 }

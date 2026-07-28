@@ -19,9 +19,7 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
+	_ = godotenv.Load()
 	ctx := context.Background()
 	dbURL := os.Getenv("USER_DATABASE_URL")
 

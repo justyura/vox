@@ -19,9 +19,7 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
+	_ = godotenv.Load()
 	ts, err := transcriber.New(os.Getenv("MODEL_PATH"))
 	if err != nil {
 		log.Fatalf("failed to load model: %v", err)
