@@ -1,0 +1,8 @@
+.git
+**/.env
+*.bin
+*.log
+minio-data
+files
+jfk.wav
+playground

@@ -44,7 +44,6 @@ services:
     volumes:
       - taskdata:/var/lib/postgresql/data
 
-
   rabbitmq:
     image: rabbitmq:management-alpine
     restart: always
@@ -56,6 +55,48 @@ services:
       RABBITMQ_DEFAULT_PASS: vox
     volumes:
       - rabbitmq:/var/lib/rabbitmq
+
+  api:
+    image: vox-api:dev
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      JWT_SECRET_KEY: devsecret
+      USER_DATABASE_URL: postgres://vox:vox@userdb:5432/vox?sslmode=disable
+      FILE_SERVICE_ADDR: file:50051
+      TASK_SERVICE_ADDR: task:50052
+
+  file:
+    image: vox-file:dev
+    restart: always
+    ports:
+      - "50051:50051"
+    environment:
+      DATABASE_URL: postgres://vox:vox@filedb:5432/vox
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESSKEY: minioadmin
+      MINIO_SECRETACCESSKEY: minioadmin
+      MINIO_BUCKET: vox
+      PRESIGN_TTL: 24h
+
+  task:
+    image: vox-task:dev
+    restart: always
+    ports:
+      - "50052:50052"
+    environment:
+      DATABASE_URL: postgres://vox:vox@taskdb:5432/vox?sslmode=disable
+      FILE_SERVICE_ADDR: file:50051
+      RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
+
+  worker:
+    image: vox-worker:dev
+    restart: always
+    environment:
+      TASK_SERVER_ADDR: task:50052
+      RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
+
 
 volumes:
   userdata:
