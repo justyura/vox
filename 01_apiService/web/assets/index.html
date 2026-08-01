@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Vox — 可观测、可弹性伸缩的本地语音转写平台">
+    <meta name="theme-color" content="#07100f">
+    <title>Vox · 本地语音计算平台</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-glow page-glow-one" aria-hidden="true"></div>
+    <div class="page-glow page-glow-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="返回 Vox 首页">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </span>
+        <span class="brand-word">VOX</span>
+      </a>
+
+      <nav class="site-nav" aria-label="主导航">
+        <a href="#workspace">转写工作台</a>
+        <a href="#architecture">系统设计</a>
+      </nav>
+
+      <div class="account-area">
+        <button class="account-button" id="account-button" type="button">
+          <span class="account-dot" aria-hidden="true"></span>
+          <span id="account-label">登录体验</span>
+        </button>
+        <button class="text-button" id="logout-button" type="button" hidden>退出</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero section-shell">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="live-dot" aria-hidden="true"></span>
+            LOCAL-FIRST SPEECH COMPUTE
+          </div>
+          <h1>让语音计算的每一步<br><span>都清晰可见。</span></h1>
+          <p class="hero-lead">
+            Vox 将上传、排队、推理与结果存储拆成一条可观测的异步流水线，
+            使用 Go 和 whisper.cpp 在本地完成语音转写。
+          </p>
+
+          <div class="hero-actions">
+            <a class="primary-action" href="#workspace">
+              开始一次转写
+              <span aria-hidden="true">↘</span>
+            </a>
+            <a class="secondary-action" href="#architecture">查看处理链路</a>
+          </div>
+
+          <div class="capability-list" aria-label="核心能力">
+            <span>异步任务队列</span>
+            <span>对象存储直传</span>
+            <span>本地模型推理</span>
+          </div>
+        </div>
+
+        <div class="hero-system" aria-label="Vox 系统处理流程">
+          <div class="system-topline">
+            <div>
+              <span class="system-kicker">SYSTEM PIPELINE</span>
+              <strong>Ready for workload</strong>
+            </div>
+            <span class="ready-badge"><i></i> API READY</span>
+          </div>
+
+          <div class="pipeline">
+            <div class="pipeline-node">
+              <span class="node-index">01</span>
+              <div>
+                <small>INGRESS</small>
+                <strong>API Gateway</strong>
+              </div>
+              <span class="node-state">JWT</span>
+            </div>
+            <div class="pipeline-link" aria-hidden="true"><span></span></div>
+            <div class="pipeline-node">
+              <span class="node-index">02</span>
+              <div>
+                <small>DISPATCH</small>
+                <strong>Task Queue</strong>
+              </div>
+              <span class="node-state">AMQP</span>
+            </div>
+            <div class="pipeline-link" aria-hidden="true"><span></span></div>
+            <div class="pipeline-node node-highlight">
+              <span class="node-index">03</span>
+              <div>
+                <small>COMPUTE</small>
+                <strong>Whisper Worker</strong>
+              </div>
+              <span class="node-state">CGO</span>
+            </div>
+            <div class="pipeline-link" aria-hidden="true"><span></span></div>
+            <div class="pipeline-node">
+              <span class="node-index">04</span>
+              <div>
+                <small>RESULT</small>
+                <strong>Object Storage</strong>
+              </div>
+              <span class="node-state">S3</span>
+            </div>
+          </div>
+
+          <div class="performance-equation">
+            <div>
+              <small>PROJECT NORTH STAR</small>
+              <strong>高性能</strong>
+            </div>
+            <span>=</span>
+            <div><small>EFFICIENCY</small><strong>效率</strong></div>
+            <span>×</span>
+            <div><small>SPEED</small><strong>速度</strong></div>
+            <span>×</span>
+            <div><small>ACCURACY</small><strong>准确性</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace-section" id="workspace">
+        <div class="section-heading section-shell">
+          <div>
+            <span class="section-number">01 / TRANSCRIBE</span>
+            <h2>转写工作台</h2>
+          </div>
+          <p>选择一段 16kHz 单声道 WAV 音频，观察它如何经过完整的异步处理链路。</p>
+        </div>
+
+        <div class="auth-card section-shell" id="auth-card">
+          <div class="auth-intro">
+            <span class="section-number">ACCESS CONTROL</span>
+            <h3>先建立你的工作空间</h3>
+            <p>登录后即可上传音频、跟踪任务状态，并查看属于你的历史结果。</p>
+            <ul>
+              <li><span>01</span> JWT 身份认证</li>
+              <li><span>02</span> 文件所有权隔离</li>
+              <li><span>03</span> 结果安全访问</li>
+            </ul>
+          </div>
+
+          <div class="auth-form-panel">
+            <div class="auth-tabs" role="tablist" aria-label="身份验证方式">
+              <button class="auth-tab is-active" id="login-tab" type="button" role="tab" aria-selected="true">登录</button>
+              <button class="auth-tab" id="signup-tab" type="button" role="tab" aria-selected="false">注册</button>
+            </div>
+
+            <form id="auth-form">
+              <div class="field-group">
+                <label for="email">邮箱</label>
+                <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+              </div>
+              <div class="field-group">
+                <label for="password">密码</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="输入密码" required>
+              </div>
+              <button class="form-submit" id="auth-submit" type="submit">
+                <span>登录并进入工作台</span>
+                <span aria-hidden="true">→</span>
+              </button>
+              <p class="form-message" id="auth-message" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+
+        <div class="workbench section-shell" id="workbench" hidden>
+          <div class="upload-panel panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">INPUT</span>
+                <h3>选择音频</h3>
+              </div>
+              <span class="format-badge">WAV · 16kHz · MONO</span>
+            </div>
+
+            <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="选择或拖入 WAV 音频">
+              <input id="file-input" type="file" accept=".wav,audio/wav" hidden>
+              <div class="drop-visual" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <strong>将音频拖到这里</strong>
+              <p>或点击浏览本地文件</p>
+              <button class="browse-button" id="browse-button" type="button">选择 WAV 文件</button>
+            </div>
+
+            <div class="selected-file" id="selected-file" hidden>
+              <div class="file-icon" aria-hidden="true">WAV</div>
+              <div class="file-main">
+                <strong id="selected-file-name"></strong>
+                <span id="selected-file-meta"></span>
+              </div>
+              <button class="remove-file" id="remove-file" type="button" aria-label="移除所选文件">×</button>
+            </div>
+
+            <audio class="audio-preview" id="audio-preview" controls hidden></audio>
+
+            <button class="transcribe-button" id="transcribe-button" type="button" disabled>
+              <span>开始异步转写</span>
+              <span class="button-wave" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+            </button>
+
+            <p class="input-note">
+              当前推理器要求 16kHz 单声道 WAV；通用音频格式转换将在后续版本加入。
+            </p>
+          </div>
+
+          <div class="progress-panel panel">
+            <div class="panel-header">
+              <div>
+                <span class="panel-kicker">PIPELINE</span>
+                <h3>处理进度</h3>
+              </div>
+              <span class="task-id" id="task-id">等待任务</span>
+            </div>
+
+            <ol class="task-steps" id="task-steps">
+              <li data-step="upload">
+                <span class="step-marker">01</span>
+                <div>
+                  <strong>直传对象存储</strong>
+                  <small>通过预签名 URL 上传音频</small>
+                </div>
+                <span class="step-status">等待</span>
+              </li>
+              <li data-step="queue">
+                <span class="step-marker">02</span>
+                <div>
+                  <strong>创建异步任务</strong>
+                  <small>记录任务并投递至 RabbitMQ</small>
+                </div>
+                <span class="step-status">等待</span>
+              </li>
+              <li data-step="transcribe">
+                <span class="step-marker">03</span>
+                <div>
+                  <strong>本地模型推理</strong>
+                  <small>Worker 使用 whisper.cpp 转写</small>
+                </div>
+                <span class="step-status">等待</span>
+              </li>
+              <li data-step="result">
+                <span class="step-marker">04</span>
+                <div>
+                  <strong>读取转写结果</strong>
+                  <small>安全下载属于当前用户的结果</small>
+                </div>
+                <span class="step-status">等待</span>
+              </li>
+            </ol>
+
+            <div class="progress-summary">
+              <div>
+                <small>当前状态</small>
+                <strong id="current-status">等待音频</strong>
+              </div>
+              <div>
+                <small>本次耗时</small>
+                <strong id="elapsed-time">—</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-card section-shell" id="result-card" hidden>
+          <div class="result-topline">
+            <div>
+              <span class="section-number">TRANSCRIPT READY</span>
+              <h3>转写结果</h3>
+            </div>
+            <div class="result-actions">
+              <button id="copy-result" type="button">复制文本</button>
+              <button id="download-result" type="button">下载结果</button>
+            </div>
+          </div>
+
+          <div class="result-layout">
+            <div class="transcript-box">
+              <p id="transcript-text"></p>
+            </div>
+            <aside class="result-metrics" aria-label="本次任务摘要">
+              <div><small>END-TO-END</small><strong id="result-duration">—</strong></div>
+              <div><small>AUDIO LENGTH</small><strong id="audio-duration">—</strong></div>
+              <div><small>MODEL</small><strong>whisper.cpp / tiny</strong></div>
+              <div><small>STATUS</small><strong class="success-text">Completed</strong></div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="history-card section-shell" id="history-card" hidden>
+          <div class="history-heading">
+            <div>
+              <span class="section-number">RECENT ACTIVITY</span>
+              <h3>最近任务</h3>
+            </div>
+            <button id="refresh-tasks" type="button">刷新</button>
+          </div>
+          <div class="task-list" id="task-list">
+            <p class="empty-state">还没有任务，上传第一段音频开始体验。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="architecture-section" id="architecture">
+        <div class="section-shell architecture-grid">
+          <div class="architecture-copy">
+            <span class="section-number">02 / SYSTEM DESIGN</span>
+            <h2>为计算与请求<br>选择不同的节奏。</h2>
+            <p>
+              API 保持轻量，文件通过预签名 URL 直达对象存储；计算密集型 Worker
+              从队列按需取任务。这种边界让计算能力可以独立扩展。
+            </p>
+          </div>
+          <div class="architecture-points">
+            <article>
+              <span>01</span>
+              <div><h3>传输效率</h3><p>大文件绕过 API 服务，减少带宽和内存压力。</p></div>
+            </article>
+            <article>
+              <span>02</span>
+              <div><h3>异步解耦</h3><p>RabbitMQ 吸收流量峰值，用户请求不必等待模型执行。</p></div>
+            </article>
+            <article>
+              <span>03</span>
+              <div><h3>计算隔离</h3><p>whisper.cpp Worker 可以独立部署、恢复并在未来弹性扩容。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer section-shell">
+      <a class="brand footer-brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </span>
+        <span class="brand-word">VOX</span>
+      </a>
+      <p>Built with Go, gRPC, RabbitMQ, MinIO and whisper.cpp.</p>
+      <span>WORK IN PROGRESS · 2026</span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>
