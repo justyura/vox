@@ -7,6 +7,7 @@ service FileManager {
   rpc Upload(UploadRequest) returns (UploadReply) {}
   rpc Download(DownloadRequest) returns (DownloadReply) {}
   rpc ListFiles(ListFilesRequest) returns (ListFilesReply) {}
+  rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadReply) {}
 }
 
 message UploadRequest {
@@ -26,6 +27,15 @@ message DownloadRequest {
 
 message DownloadReply {
   string download_url = 1;
+}
+
+message CompleteUploadRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+message CompleteUploadReply {
+  int64 size = 1;
 }
 
 message ListFilesRequest {

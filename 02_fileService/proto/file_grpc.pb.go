@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v7.34.0
-// source: file.proto
+// source: 02_fileService/proto/file.proto
 
 package file
 
@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	FileManager_Upload_FullMethodName    = "/file.FileManager/Upload"
-	FileManager_Download_FullMethodName  = "/file.FileManager/Download"
-	FileManager_ListFiles_FullMethodName = "/file.FileManager/ListFiles"
+	FileManager_Upload_FullMethodName         = "/file.FileManager/Upload"
+	FileManager_Download_FullMethodName       = "/file.FileManager/Download"
+	FileManager_ListFiles_FullMethodName      = "/file.FileManager/ListFiles"
+	FileManager_CompleteUpload_FullMethodName = "/file.FileManager/CompleteUpload"
 )
 
 // FileManagerClient is the client API for FileManager service.
@@ -31,6 +32,7 @@ type FileManagerClient interface {
 	Upload(ctx context.Context, in *UploadRequest, opts ...grpc.CallOption) (*UploadReply, error)
 	Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadReply, error)
 	ListFiles(ctx context.Context, in *ListFilesRequest, opts ...grpc.CallOption) (*ListFilesReply, error)
+	CompleteUpload(ctx context.Context, in *CompleteUploadRequest, opts ...grpc.CallOption) (*CompleteUploadReply, error)
 }
 
 type fileManagerClient struct {
@@ -71,6 +73,16 @@ func (c *fileManagerClient) ListFiles(ctx context.Context, in *ListFilesRequest,
 	return out, nil
 }
 
+func (c *fileManagerClient) CompleteUpload(ctx context.Context, in *CompleteUploadRequest, opts ...grpc.CallOption) (*CompleteUploadReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CompleteUploadReply)
+	err := c.cc.Invoke(ctx, FileManager_CompleteUpload_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FileManagerServer is the server API for FileManager service.
 // All implementations must embed UnimplementedFileManagerServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type FileManagerServer interface {
 	Upload(context.Context, *UploadRequest) (*UploadReply, error)
 	Download(context.Context, *DownloadRequest) (*DownloadReply, error)
 	ListFiles(context.Context, *ListFilesRequest) (*ListFilesReply, error)
+	CompleteUpload(context.Context, *CompleteUploadRequest) (*CompleteUploadReply, error)
 	mustEmbedUnimplementedFileManagerServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedFileManagerServer) Download(context.Context, *DownloadRequest
 }
 func (UnimplementedFileManagerServer) ListFiles(context.Context, *ListFilesRequest) (*ListFilesReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListFiles not implemented")
+}
+func (UnimplementedFileManagerServer) CompleteUpload(context.Context, *CompleteUploadRequest) (*CompleteUploadReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method CompleteUpload not implemented")
 }
 func (UnimplementedFileManagerServer) mustEmbedUnimplementedFileManagerServer() {}
 func (UnimplementedFileManagerServer) testEmbeddedByValue()                     {}
@@ -172,6 +188,24 @@ func _FileManager_ListFiles_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FileManager_CompleteUpload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CompleteUploadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileManagerServer).CompleteUpload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileManager_CompleteUpload_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileManagerServer).CompleteUpload(ctx, req.(*CompleteUploadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FileManager_ServiceDesc is the grpc.ServiceDesc for FileManager service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,7 +225,11 @@ var FileManager_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListFiles",
 			Handler:    _FileManager_ListFiles_Handler,
 		},
+		{
+			MethodName: "CompleteUpload",
+			Handler:    _FileManager_CompleteUpload_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "file.proto",
+	Metadata: "02_fileService/proto/file.proto",
 }

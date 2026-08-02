@@ -60,6 +60,29 @@ func (gs *GRPCServer) Download(ctx context.Context, req *filepb.DownloadRequest)
 	}, nil
 }
 
+func (gs *GRPCServer) CompleteUpload(ctx context.Context, req *filepb.CompleteUploadRequest) (*filepb.CompleteUploadReply, error) {
+	fileid, err := uuid.Parse(req.FileId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid file_id")
+	}
+	userid, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid user_id")
+	}
+	size, err := gs.fs.CompleteUpload(ctx, userid, fileid)
+	if err != nil {
+		switch {
+		case errors.Is(err, model.ErrNotFound):
+			return nil, status.Error(codes.NotFound, "file not found")
+		case errors.Is(err, service.ErrUploadIncomplete):
+			return nil, status.Error(codes.FailedPrecondition, "upload not completed")
+		default:
+			return nil, status.Error(codes.Internal, "complete upload failed")
+		}
+	}
+	return &filepb.CompleteUploadReply{Size: size}, nil
+}
+
 func (gs *GRPCServer) ListFiles(ctx context.Context, req *filepb.ListFilesRequest) (*filepb.ListFilesReply, error) {
 	ownerid, err := uuid.Parse(req.UserId)
 	if err != nil {
