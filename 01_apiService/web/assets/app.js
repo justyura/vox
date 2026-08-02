@@ -493,6 +493,16 @@
         throw new Error(`对象存储返回 ${putResponse.status}`);
       }
 
+      elements.currentStatus.textContent = "正在确认上传结果";
+      const completeResponse = await fetch(
+        `/files/${encodeURIComponent(uploadData.file_id)}/complete`,
+        { method: "POST", headers: authHeaders() },
+      );
+      const completeData = await parseResponse(completeResponse);
+      if (!completeResponse.ok) {
+        throw new Error(messageFrom(completeData, "上传结果确认失败"));
+      }
+
       setStep("upload", "complete");
       setStep("queue", "active");
       elements.currentStatus.textContent = "正在创建异步任务";

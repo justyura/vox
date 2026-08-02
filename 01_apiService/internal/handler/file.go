@@ -31,6 +31,36 @@ func Upload(client filepb.FileManagerClient) gin.HandlerFunc {
 	}
 }
 
+func CompleteUpload(client filepb.FileManagerClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fileid := c.Param("fileid")
+		if fileid == "" {
+			c.JSON(400, gin.H{
+				"error": "fileid required",
+			})
+			return
+		}
+		userID := c.MustGet("user_id").(string)
+
+		reply, err := client.CompleteUpload(c.Request.Context(), &filepb.CompleteUploadRequest{
+			FileId: fileid,
+			UserId: userID,
+		})
+		if err != nil {
+			switch status.Code(err) {
+			case codes.NotFound:
+				c.JSON(404, gin.H{"error": "file not found"})
+			case codes.FailedPrecondition:
+				c.JSON(409, gin.H{"error": "upload not completed"})
+			default:
+				c.JSON(500, gin.H{"error": "complete upload failed"})
+			}
+			return
+		}
+		c.JSON(200, gin.H{"size": reply.Size})
+	}
+}
+
 func Download(client filepb.FileManagerClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fileid := c.Param("fileid")
