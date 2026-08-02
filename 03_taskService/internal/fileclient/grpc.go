@@ -31,3 +31,11 @@ func (g *GRPCClient) Request(ctx context.Context, userID, inputFileID uuid.UUID,
 
 	return dl.DownloadUrl, ul.UploadUrl, resultFileID, nil
 }
+
+func (g *GRPCClient) Complete(ctx context.Context, userID, fileID uuid.UUID) error {
+	_, err := g.c.CompleteUpload(ctx, &filepb.CompleteUploadRequest{
+		FileId: fileID.String(),
+		UserId: userID.String(),
+	})
+	return err
+}

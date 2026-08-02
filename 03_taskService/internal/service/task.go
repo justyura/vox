@@ -53,5 +53,16 @@ func (t *TaskServer) GetTask(ctx context.Context, taskid uuid.UUID) (model.Task,
 }
 
 func (t *TaskServer) UpdateStatus(ctx context.Context, jobID uuid.UUID, status string) error {
-	return t.st.UpdateStatus(ctx, jobID, status)
+	if err := t.st.UpdateStatus(ctx, jobID, status); err != nil {
+		return err
+	}
+	if status != model.StatusCompleted {
+		return nil
+	}
+
+	task, err := t.st.Get(ctx, jobID)
+	if err != nil {
+		return err
+	}
+	return t.fc.Complete(ctx, task.UserID, task.OutputFileID)
 }
