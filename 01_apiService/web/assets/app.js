@@ -10,6 +10,7 @@
     audioDuration: 0,
     taskID: "",
     resultText: "",
+    resultSegments: [],
     startedAt: 0,
     elapsedTimer: null,
     pollTimer: null,
@@ -44,6 +45,7 @@
     elapsedTime: document.querySelector("#elapsed-time"),
     resultCard: document.querySelector("#result-card"),
     transcriptText: document.querySelector("#transcript-text"),
+    resultAudio: document.querySelector("#result-audio"),
     resultDuration: document.querySelector("#result-duration"),
     audioDuration: document.querySelector("#audio-duration"),
     copyResult: document.querySelector("#copy-result"),
@@ -218,6 +220,47 @@
     return `${minutes}m ${rest}s`;
   }
 
+  function formatTimestamp(milliseconds) {
+    const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const minutePart = hours ? String(minutes).padStart(2, "0") : String(minutes);
+    const prefix = hours ? `${hours}:` : "";
+    return `${prefix}${minutePart}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function parseTranscript(raw) {
+    try {
+      const payload = JSON.parse(raw);
+      if (!payload || typeof payload !== "object" || typeof payload.text !== "string") {
+        throw new Error("unsupported transcript result");
+      }
+
+      const segments = (Array.isArray(payload.segments) ? payload.segments : [])
+        .map((segment) => ({
+          startMS: Number(segment.start_ms),
+          endMS: Number(segment.end_ms),
+          text: typeof segment.text === "string" ? segment.text.trim() : "",
+        }))
+        .filter(
+          (segment) =>
+            Number.isFinite(segment.startMS) &&
+            Number.isFinite(segment.endMS) &&
+            segment.startMS >= 0 &&
+            segment.endMS >= segment.startMS &&
+            segment.text,
+        );
+
+      return {
+        text: payload.text.trim() || segments.map((segment) => segment.text).join(" "),
+        segments,
+      };
+    } catch {
+      return { text: raw.trim(), segments: [] };
+    }
+  }
+
   function chooseFile(file) {
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".wav")) {
@@ -253,6 +296,8 @@
     elements.selectedFile.hidden = true;
     elements.dropZone.hidden = false;
     elements.transcribeButton.disabled = true;
+    elements.resultCard.hidden = true;
+    clearResultAudio();
   }
 
   function setStep(name, status) {
@@ -275,12 +320,122 @@
     stopPolling();
     state.taskID = "";
     state.resultText = "";
+    state.resultSegments = [];
     state.startedAt = 0;
     elements.taskID.textContent = "等待任务";
     elements.currentStatus.textContent = "等待音频";
     elements.elapsedTime.textContent = "—";
     for (const step of elements.taskSteps) {
       setStep(step.dataset.step, "waiting");
+    }
+  }
+
+  function clearResultAudio() {
+    elements.resultAudio.pause();
+    elements.resultAudio.removeAttribute("src");
+    delete elements.resultAudio.dataset.source;
+    elements.resultAudio.load();
+    elements.resultAudio.hidden = true;
+  }
+
+  function setResultAudioSource(source) {
+    if (!source) {
+      clearResultAudio();
+      return;
+    }
+    if (elements.resultAudio.dataset.source !== source) {
+      elements.resultAudio.src = source;
+      elements.resultAudio.dataset.source = source;
+      elements.resultAudio.load();
+    }
+    elements.resultAudio.hidden = false;
+  }
+
+  async function loadResultAudio(inputID, preferredSource = "") {
+    if (preferredSource) {
+      setResultAudioSource(preferredSource);
+      return;
+    }
+    if (!inputID) {
+      clearResultAudio();
+      return;
+    }
+
+    const response = await fetch(`/download/${encodeURIComponent(inputID)}`, {
+      headers: authHeaders(),
+    });
+    const data = await parseResponse(response);
+    if (!response.ok || !data.download_url) {
+      throw new Error(messageFrom(data, "无法读取原始音频"));
+    }
+    setResultAudioSource(data.download_url);
+  }
+
+  function renderTranscript(transcript) {
+    elements.transcriptText.replaceChildren();
+    if (!transcript.segments.length) {
+      const paragraph = document.createElement("p");
+      paragraph.className = "transcript-plain";
+      paragraph.textContent = transcript.text || "转写结果为空。";
+      elements.transcriptText.appendChild(paragraph);
+      return;
+    }
+
+    for (const segment of transcript.segments) {
+      const button = document.createElement("button");
+      button.className = "transcript-segment";
+      button.type = "button";
+      button.dataset.startMs = String(segment.startMS);
+      button.dataset.endMs = String(segment.endMS);
+      button.setAttribute(
+        "aria-label",
+        `从 ${formatTimestamp(segment.startMS)} 开始播放：${segment.text}`,
+      );
+
+      const timestamp = document.createElement("span");
+      timestamp.className = "segment-timestamp";
+      timestamp.textContent = formatTimestamp(segment.startMS);
+
+      const text = document.createElement("span");
+      text.className = "segment-text";
+      text.textContent = segment.text;
+
+      button.append(timestamp, text);
+      elements.transcriptText.appendChild(button);
+    }
+  }
+
+  function setActiveSegment(activeButton) {
+    for (const button of elements.transcriptText.querySelectorAll(".transcript-segment")) {
+      button.classList.toggle("is-playing", button === activeButton);
+    }
+  }
+
+  function syncActiveSegment() {
+    const currentMS = elements.resultAudio.currentTime * 1000;
+    const active = Array.from(elements.transcriptText.querySelectorAll(".transcript-segment")).find(
+      (button) => currentMS >= Number(button.dataset.startMs) && currentMS < Number(button.dataset.endMs),
+    );
+    setActiveSegment(active || null);
+  }
+
+  function seekToSegment(button) {
+    if (!elements.resultAudio.dataset.source) {
+      showToast("原始音频暂不可用，无法定位播放。", true);
+      return;
+    }
+
+    const seek = () => {
+      elements.resultAudio.currentTime = Number(button.dataset.startMs) / 1000;
+      setActiveSegment(button);
+      elements.resultAudio.play().catch(() => {});
+    };
+
+    if (elements.resultAudio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      seek();
+    } else {
+      elements.resultAudio.addEventListener("loadedmetadata", seek, { once: true });
+      elements.resultAudio.load();
     }
   }
 
@@ -393,7 +548,10 @@
         setStep("transcribe", "complete");
         setStep("result", "active");
         elements.currentStatus.textContent = "正在读取转写结果";
-        await loadTranscript(task.output_file_id);
+        await loadTranscript(task.output_file_id, {
+          inputID: task.input_file_id,
+          audioSource: state.audioURL,
+        });
         setStep("result", "complete");
         elements.currentStatus.textContent = "转写已完成";
         stopElapsedTimer();
@@ -438,11 +596,23 @@
       throw new Error(`结果存储返回 ${resultResponse.status}`);
     }
 
-    state.resultText = await resultResponse.text();
-    elements.transcriptText.textContent = state.resultText || "转写结果为空。";
+    const transcript = parseTranscript(await resultResponse.text());
+    state.resultText = transcript.text;
+    state.resultSegments = transcript.segments;
+    renderTranscript(transcript);
+
+    elements.audioDuration.textContent = options.audioSource && state.audioDuration
+      ? formatDuration(state.audioDuration)
+      : "加载中…";
+    try {
+      await loadResultAudio(options.inputID, options.audioSource);
+    } catch (error) {
+      clearResultAudio();
+      elements.audioDuration.textContent = "—";
+      showToast(`${error.message}，时间戳仍可查看。`, true);
+    }
     const totalSeconds = state.startedAt ? (Date.now() - state.startedAt) / 1000 : null;
     elements.resultDuration.textContent = totalSeconds ? formatDuration(totalSeconds) : "历史任务";
-    elements.audioDuration.textContent = formatDuration(state.audioDuration);
     elements.resultCard.hidden = false;
     if (options.scroll !== false) {
       elements.resultCard.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -496,9 +666,10 @@
         const taskID = task.task_id || "";
         const status = task.status || "pending";
         const outputID = task.output_file_id || "";
+        const inputID = task.input_file_id || "";
         const action =
           status === "completed" && outputID
-            ? `<button type="button" data-result-id="${escapeHTML(outputID)}" data-task-id="${escapeHTML(taskID)}">查看结果</button>`
+            ? `<button type="button" data-result-id="${escapeHTML(outputID)}" data-input-id="${escapeHTML(inputID)}" data-task-id="${escapeHTML(taskID)}">查看结果</button>`
             : "<span></span>";
         return `
           <div class="task-row">
@@ -563,6 +734,15 @@
     state.audioDuration = elements.audioPreview.duration || 0;
     elements.selectedFileMeta.textContent = `${formatBytes(state.selectedFile?.size || 0)} · ${formatDuration(state.audioDuration)}`;
   });
+  elements.resultAudio.addEventListener("loadedmetadata", () => {
+    elements.audioDuration.textContent = formatDuration(elements.resultAudio.duration);
+  });
+  elements.resultAudio.addEventListener("timeupdate", syncActiveSegment);
+  elements.resultAudio.addEventListener("ended", () => setActiveSegment(null));
+  elements.transcriptText.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-start-ms]");
+    if (button) seekToSegment(button);
+  });
 
   for (const eventName of ["dragenter", "dragover"]) {
     elements.dropZone.addEventListener(eventName, (event) => {
@@ -589,7 +769,7 @@
     if (!button) return;
     state.taskID = button.dataset.taskId || "";
     try {
-      await loadTranscript(button.dataset.resultId);
+      await loadTranscript(button.dataset.resultId, { inputID: button.dataset.inputId });
     } catch (error) {
       showToast(error.message, true);
     }

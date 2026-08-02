@@ -10,6 +10,7 @@ import (
 
 	"github.com/ggerganov/whisper.cpp/bindings/go/pkg/whisper"
 	"github.com/go-audio/wav"
+	"github.com/justyura/vox/04_transcriberService/internal/transcript"
 )
 
 type Whisper struct {
@@ -26,29 +27,42 @@ func New(modelPath string) (*Whisper, error) {
 	}, nil
 }
 
-func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (string, error) {
+func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (transcript.Result, error) {
 	wctx, err := w.model.NewContext()
 	if err != nil {
-		return "", fmt.Errorf("new context: %w", err)
+		return transcript.Result{}, fmt.Errorf("new context: %w", err)
 	}
 
 	data, err := readWAV(wavePath)
 	if err != nil {
-		return "", err
+		return transcript.Result{}, err
 	}
 	if len(data) == 0 {
-		return "", fmt.Errorf("empty audio data")
+		return transcript.Result{}, fmt.Errorf("empty audio data")
 	}
 
 	var b strings.Builder
+	segments := make([]transcript.Segment, 0)
 	cb := func(seg whisper.Segment) {
 		log.Printf("[%6s -> %6s] %s", seg.Start.Truncate(time.Millisecond), seg.End.Truncate(time.Millisecond), seg.Text)
 		b.WriteString(seg.Text)
+		text := strings.TrimSpace(seg.Text)
+		if text == "" {
+			return
+		}
+		segments = append(segments, transcript.Segment{
+			StartMS: seg.Start.Milliseconds(),
+			EndMS:   seg.End.Milliseconds(),
+			Text:    text,
+		})
 	}
 	if err := wctx.Process(data, nil, cb, nil); err != nil {
-		return "", fmt.Errorf("process: %w", err)
+		return transcript.Result{}, fmt.Errorf("process: %w", err)
 	}
-	return strings.TrimSpace(b.String()), nil
+	return transcript.Result{
+		Text:     strings.TrimSpace(b.String()),
+		Segments: segments,
+	}, nil
 }
 
 // readWAV decodes a WAV file into float32 samples, requiring the format

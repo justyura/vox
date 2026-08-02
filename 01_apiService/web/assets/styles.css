@@ -1165,13 +1165,105 @@ a {
   background: rgba(0, 0, 0, 0.16);
 }
 
-.transcript-box p {
+.result-player {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.result-player > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.result-player strong {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.result-player audio {
+  width: 100%;
+  height: 38px;
+  opacity: 0.84;
+}
+
+.transcript-segments {
+  display: grid;
+  gap: 8px;
+  max-height: 480px;
+  padding-right: 5px;
+  margin-top: 18px;
+  overflow-y: auto;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.transcript-plain {
   margin: 0;
   color: #d6e2de;
   font-family: ui-serif, Georgia, "Songti SC", serif;
   font-size: 17px;
   line-height: 2;
   white-space: pre-wrap;
+}
+
+.transcript-segment {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 14px;
+  align-items: start;
+  width: 100%;
+  padding: 13px 14px;
+  color: #d6e2de;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.transcript-segment:hover {
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(255, 255, 255, 0.028);
+  transform: translateX(2px);
+}
+
+.transcript-segment.is-playing {
+  color: var(--text);
+  border-color: rgba(185, 246, 106, 0.2);
+  background: var(--accent-soft);
+}
+
+.segment-timestamp {
+  width: fit-content;
+  padding: 5px 8px;
+  color: var(--aqua);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+  border: 1px solid rgba(105, 230, 193, 0.18);
+  border-radius: 999px;
+  background: rgba(105, 230, 193, 0.055);
+}
+
+.is-playing .segment-timestamp {
+  color: #07100f;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.segment-text {
+  font-family: ui-serif, Georgia, "Songti SC", serif;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
 .result-metrics {
@@ -1541,6 +1633,17 @@ a {
 
   .result-layout {
     grid-template-columns: 1fr;
+  }
+
+  .result-player > div {
+    display: grid;
+    gap: 6px;
+  }
+
+  .transcript-segment {
+    grid-template-columns: 58px 1fr;
+    gap: 10px;
+    padding-inline: 9px;
   }
 
   .task-row {

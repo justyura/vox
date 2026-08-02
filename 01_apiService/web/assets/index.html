@@ -281,7 +281,14 @@
 
           <div class="result-layout">
             <div class="transcript-box">
-              <p id="transcript-text"></p>
+              <div class="result-player">
+                <div>
+                  <span class="panel-kicker">TIMELINE</span>
+                  <strong>点击时间戳，从对应位置播放</strong>
+                </div>
+                <audio id="result-audio" controls preload="metadata"></audio>
+              </div>
+              <div class="transcript-segments" id="transcript-text" aria-live="polite"></div>
             </div>
             <aside class="result-metrics" aria-label="本次任务摘要">
               <div><small>END-TO-END</small><strong id="result-duration">—</strong></div>

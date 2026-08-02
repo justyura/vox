@@ -1,14 +1,16 @@
 package worker
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/google/uuid"
+	"github.com/justyura/vox/04_transcriberService/internal/transcript"
 )
 
 type TaskMessage struct {
@@ -23,7 +25,7 @@ type Worker struct {
 }
 
 type Transcriber interface {
-	Transcribe(ctx context.Context, wavePath string) (string, error)
+	Transcribe(ctx context.Context, wavePath string) (transcript.Result, error)
 }
 
 type Reporter interface {
@@ -46,22 +48,26 @@ func (w *Worker) Handle(ctx context.Context, msg TaskMessage) error {
 	return w.rp.Report(ctx, msg.JobID, "completed")
 }
 
-func (w *Worker) process(ctx context.Context, msg TaskMessage) (string, error) {
+func (w *Worker) process(ctx context.Context, msg TaskMessage) (transcript.Result, error) {
 	tmpPath, err := downloadToTemp(msg.InputURL)
 	if err != nil {
-		return "", fmt.Errorf("download: %w", err)
+		return transcript.Result{}, fmt.Errorf("download: %w", err)
 	}
 	defer os.Remove(tmpPath)
 
-	text, err := w.ts.Transcribe(ctx, tmpPath)
+	result, err := w.ts.Transcribe(ctx, tmpPath)
 	if err != nil {
-		return "", fmt.Errorf("transcribe: %w", err)
+		return transcript.Result{}, fmt.Errorf("transcribe: %w", err)
 	}
-	if err := upload(ctx, msg.OutputURL, text); err != nil {
-		return "", fmt.Errorf("upload: %w", err)
+	payload, err := json.Marshal(result)
+	if err != nil {
+		return transcript.Result{}, fmt.Errorf("encode result: %w", err)
+	}
+	if err := upload(ctx, msg.OutputURL, payload); err != nil {
+		return transcript.Result{}, fmt.Errorf("upload: %w", err)
 	}
 
-	return text, nil
+	return result, nil
 }
 
 func downloadToTemp(url string) (string, error) {
@@ -89,11 +95,12 @@ func downloadToTemp(url string) (string, error) {
 	return tmp.Name(), nil
 }
 
-func upload(ctx context.Context, targetURL string, result string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, targetURL, strings.NewReader(result))
+func upload(ctx context.Context, targetURL string, result []byte) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, targetURL, bytes.NewReader(result))
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
