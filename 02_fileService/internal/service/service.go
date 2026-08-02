@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/justyura/vox/02_fileService/internal/blob"
@@ -41,16 +41,29 @@ func (fs *FileServer) Upload(ctx context.Context, user uuid.UUID, filename strin
 	return f.FileID.String(), link, nil
 }
 
-func (fs *FileServer) ListenUpload(ctx context.Context) {
-	for ev := range fs.oss.ListenUpload(ctx) {
-		if ev.Err != nil {
-			log.Println(ev.Err)
-			continue
-		}
-		if err := fs.store.MarkReady(ctx, ev.ID, ev.Size); err != nil {
-			log.Println(err)
-		}
+var ErrUploadIncomplete = errors.New("upload not completed")
+
+func (fs *FileServer) CompleteUpload(ctx context.Context, user, fileid uuid.UUID) (int64, error) {
+	f, err := fs.store.Get(ctx, fileid)
+	if err != nil {
+		return 0, err
 	}
+	if !f.CanAccess(user) {
+		return 0, model.ErrNotFound
+	}
+
+	size, err := fs.oss.Stat(ctx, fileid.String())
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return 0, ErrUploadIncomplete
+		}
+		return 0, fmt.Errorf("verify upload: %w", err)
+	}
+
+	if err := fs.store.MarkReady(ctx, fileid.String(), size); err != nil {
+		return 0, err
+	}
+	return size, nil
 }
 
 func (fs *FileServer) Listfiles(ctx context.Context, owner uuid.UUID) ([]model.File, error) {

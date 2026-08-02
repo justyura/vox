@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/justyura/vox/02_fileService/internal/model"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/minio/minio-go/v7/pkg/notification"
 )
 
 type MinioClient struct {
@@ -45,33 +45,13 @@ func (mc *MinioClient) Upload(ctx context.Context, fileID string) (string, error
 	}
 }
 
-func (mc *MinioClient) ListenUpload(ctx context.Context) <-chan UploadEvent {
-	out := make(chan UploadEvent)
-	go func() {
-		defer close(out)
-		infoch := mc.api.ListenBucketNotification(ctx, "vox", "", "", []string{
-			string(notification.ObjectCreatedPut),
-		})
-		for msg := range infoch {
-			if msg.Err != nil {
-				select {
-				case out <- UploadEvent{Err: msg.Err}:
-				case <-ctx.Done():
-					return
-				}
-				continue
-			}
-			for _, event := range msg.Records {
-				select {
-				case out <- UploadEvent{
-					ID:   event.S3.Object.Key,
-					Size: event.S3.Object.Size,
-				}:
-				case <-ctx.Done():
-					return
-				}
-			}
+func (mc *MinioClient) Stat(ctx context.Context, fileID string) (int64, error) {
+	info, err := mc.api.StatObject(ctx, "vox", fileID, minio.StatObjectOptions{})
+	if err != nil {
+		if minio.ToErrorResponse(err).Code == minio.NoSuchKey {
+			return 0, model.ErrNotFound
 		}
-	}()
-	return out
+		return 0, fmt.Errorf("stat object: %w", err)
+	}
+	return info.Size, nil
 }

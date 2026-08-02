@@ -43,9 +43,6 @@ func main() {
 	}
 
 	fs := service.NewFileServer(minio, post)
-	go func() {
-		fs.ListenUpload(ctx)
-	}()
 
 	gshandler := grpcserver.New(fs)
 	s := grpc.NewServer()
