@@ -487,7 +487,7 @@
       elements.currentStatus.textContent = "正在直传对象存储";
       const putResponse = await fetch(uploadData.upload_url, {
         method: "PUT",
-        body: state.selectedFile,
+        body: new Blob([state.selectedFile]),
       });
       if (!putResponse.ok) {
         throw new Error(`对象存储返回 ${putResponse.status}`);

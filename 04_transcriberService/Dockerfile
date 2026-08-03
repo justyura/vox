@@ -19,7 +19,8 @@ RUN mkdir -p /model \
     https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 
 FROM debian:trixie-slim
-RUN apt-get update && apt-get install -y libgomp1
+RUN apt-get update && apt-get install -y libgomp1 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /out/transcriber /transcriber
 COPY --from=build /model/ggml-tiny.bin /model/ggml-tiny.bin
