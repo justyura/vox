@@ -3,6 +3,7 @@ module github.com/justyura/vox
 go 1.25.7
 
 require (
+	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.5.3
 	github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20260305053642-30c5194c9691
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-audio/wav v1.1.0
@@ -69,6 +70,7 @@ require (
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260420184626-e10c466a9529 // indirect
 )

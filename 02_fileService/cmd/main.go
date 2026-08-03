@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -33,7 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	minio, err := blob.NewMinioClient(os.Getenv("MINIO_ENDPOINT"), os.Getenv("MINIO_ACCESSKEY"), os.Getenv("MINIO_SECRETACCESSKEY"), ttl)
+	store, err := newBlobStore(ttl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fs := service.NewFileServer(minio, post)
+	fs := service.NewFileServer(store, post)
 
 	gshandler := grpcserver.New(fs)
 	s := grpc.NewServer()
@@ -52,5 +53,29 @@ func main() {
 	log.Println("grpc server is ready")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func newBlobStore(ttl time.Duration) (blob.OSS, error) {
+	backend := os.Getenv("BLOB_BACKEND")
+	switch backend {
+	case "aliyun":
+		return blob.NewAliyunClient(
+			os.Getenv("ALIYUN_REGION"),
+			os.Getenv("ALIYUN_ENDPOINT"),
+			os.Getenv("ALIYUN_ACCESS_KEY_ID"),
+			os.Getenv("ALIYUN_ACCESS_KEY_SECRET"),
+			os.Getenv("ALIYUN_BUCKET"),
+			ttl,
+		)
+	case "minio", "":
+		return blob.NewMinioClient(
+			os.Getenv("MINIO_ENDPOINT"),
+			os.Getenv("MINIO_ACCESSKEY"),
+			os.Getenv("MINIO_SECRETACCESSKEY"),
+			ttl,
+		)
+	default:
+		return nil, fmt.Errorf("unknown BLOB_BACKEND %q", backend)
 	}
 }

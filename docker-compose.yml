@@ -74,10 +74,16 @@ services:
       - "50051:50051"
     environment:
       DATABASE_URL: postgres://vox:vox@filedb:5432/vox
+      BLOB_BACKEND: ${BLOB_BACKEND:-minio}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESSKEY: minioadmin
       MINIO_SECRETACCESSKEY: minioadmin
       MINIO_BUCKET: vox
+      ALIYUN_REGION: ${ALIYUN_REGION:-}
+      ALIYUN_ENDPOINT: ${ALIYUN_ENDPOINT:-}
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID:-}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET:-}
+      ALIYUN_BUCKET: ${ALIYUN_BUCKET:-}
       PRESIGN_TTL: 24h
 
   task:
