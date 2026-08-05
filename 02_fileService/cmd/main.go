@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 	"github.com/justyura/vox/02_fileService/internal/blob"
 	"github.com/justyura/vox/02_fileService/internal/grpcserver"
 	"github.com/justyura/vox/02_fileService/internal/meta"
+	"github.com/justyura/vox/02_fileService/internal/migrations"
 	"github.com/justyura/vox/02_fileService/internal/service"
 	file "github.com/justyura/vox/02_fileService/proto"
 	"google.golang.org/grpc"
@@ -28,6 +31,15 @@ func main() {
 	// Prepare the env
 	_ = godotenv.Load()
 	ctx := context.Background()
+
+	sqlDB, err := sql.Open("pgx", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := migrations.RunMigrations(sqlDB); err != nil {
+		log.Fatal(err)
+	}
+	sqlDB.Close()
 
 	// Dependency injection
 	ttl, err := time.ParseDuration(os.Getenv("PRESIGN_TTL"))

@@ -73,7 +73,7 @@ services:
     ports:
       - "50051:50051"
     environment:
-      DATABASE_URL: postgres://vox:vox@filedb:5432/vox
+      DATABASE_URL: postgres://vox:vox@filedb:5432/vox?sslmode=disable
       BLOB_BACKEND: ${BLOB_BACKEND:-minio}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESSKEY: minioadmin
