@@ -6,6 +6,9 @@
     <meta name="description" content="Vox — 可观测、可弹性伸缩的本地语音转写平台">
     <meta name="theme-color" content="#07100f">
     <title>Vox · 本地语音计算平台</title>
+    <!-- Warm up DNS/TCP/TLS to object storage while the user picks a file, so
+         the first upload does not pay for a cold connection. -->
+    <link rel="preconnect" href="https://vox-media.oss-cn-shanghai.aliyuncs.com" crossorigin>
     <link rel="stylesheet" href="/assets/styles.css">
   </head>
   <body>
