@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec: 
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: worker
+  template:
+    metadata:
+      labels: 
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: vox-worker:dev
+          imagePullPolicy: Never
+          env:
+            - name: TASK_SERVER_ADDR
+              value: host.minikube.internal:50052
+            - name: RABBITMQ_ADDR
+              value: amqp://vox:vox@host.minikube.internal:5672
+            
+
