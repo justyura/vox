@@ -40,7 +40,7 @@ func NewWorker(ts Transcriber, rp Reporter) *Worker {
 }
 
 func (w *Worker) Handle(ctx context.Context, msg TaskMessage) error {
-	_, err := w.process(ctx, msg)
+	err := w.process(ctx, msg)
 	if err != nil {
 		w.rp.Report(ctx, msg.JobID, "failed")
 		return err
@@ -48,26 +48,25 @@ func (w *Worker) Handle(ctx context.Context, msg TaskMessage) error {
 	return w.rp.Report(ctx, msg.JobID, "completed")
 }
 
-func (w *Worker) process(ctx context.Context, msg TaskMessage) (transcript.Result, error) {
+func (w *Worker) process(ctx context.Context, msg TaskMessage) error {
 	tmpPath, err := downloadToTemp(msg.InputURL)
 	if err != nil {
-		return transcript.Result{}, fmt.Errorf("download: %w", err)
+		return fmt.Errorf("download: %w", err)
 	}
 	defer os.Remove(tmpPath)
 
 	result, err := w.ts.Transcribe(ctx, tmpPath)
 	if err != nil {
-		return transcript.Result{}, fmt.Errorf("transcribe: %w", err)
+		return fmt.Errorf("transcribe: %w", err)
 	}
 	payload, err := json.Marshal(result)
 	if err != nil {
-		return transcript.Result{}, fmt.Errorf("encode result: %w", err)
+		return fmt.Errorf("encode result: %w", err)
 	}
 	if err := upload(ctx, msg.OutputURL, payload); err != nil {
-		return transcript.Result{}, fmt.Errorf("upload: %w", err)
+		return fmt.Errorf("upload: %w", err)
 	}
-
-	return result, nil
+	return nil
 }
 
 func downloadToTemp(url string) (string, error) {
