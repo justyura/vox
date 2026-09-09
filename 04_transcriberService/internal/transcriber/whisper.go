@@ -26,12 +26,15 @@ func New(modelPath string) (*Whisper, error) {
 	}, nil
 }
 
-func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (transcript.Result, error) {
+func (w *Whisper) Transcribe(ctx context.Context, wavePath string, language string) (transcript.Result, error) {
 	wctx, err := w.model.NewContext()
 	if err != nil {
 		return transcript.Result{}, fmt.Errorf("new context: %w", err)
 	}
-	if err := wctx.SetLanguage("zh"); err != nil {
+	if language == "" {
+		language = "auto"
+	}
+	if err := wctx.SetLanguage(language); err != nil {
 		return transcript.Result{}, fmt.Errorf("set language: %w", err)
 	}
 

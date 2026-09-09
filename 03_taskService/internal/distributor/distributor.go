@@ -7,5 +7,5 @@ import (
 )
 
 type Distributor interface {
-	Distribute(ctx context.Context, jobID uuid.UUID, inputURL, outputURL string, taskType string) error
+	Distribute(ctx context.Context, jobID uuid.UUID, inputURL, outputURL string, taskType string, language string) error
 }

@@ -18,6 +18,7 @@ type dispatchMessage struct {
 	JobID     uuid.UUID `json:"job_id"`
 	InputURL  string    `json:"input_url"`
 	OutputURL string    `json:"output_url"`
+	Language  string    `json:"language"`
 }
 
 func NewRabbitMQ(ch *amqp.Channel) (*RabbitMQ, error) {
@@ -37,8 +38,8 @@ func NewRabbitMQ(ch *amqp.Channel) (*RabbitMQ, error) {
 	return &RabbitMQ{ch: ch}, nil
 }
 
-func (r *RabbitMQ) Distribute(ctx context.Context, jobID uuid.UUID, inputURL, outputURL string, taskType string) error {
-	body, err := json.Marshal(dispatchMessage{JobID: jobID, InputURL: inputURL, OutputURL: outputURL})
+func (r *RabbitMQ) Distribute(ctx context.Context, jobID uuid.UUID, inputURL, outputURL string, taskType string, language string) error {
+	body, err := json.Marshal(dispatchMessage{JobID: jobID, InputURL: inputURL, OutputURL: outputURL, Language: language})
 	if err != nil {
 		return err
 	}

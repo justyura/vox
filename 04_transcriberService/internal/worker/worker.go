@@ -17,6 +17,7 @@ type TaskMessage struct {
 	JobID     uuid.UUID `json:"job_id"`
 	InputURL  string    `json:"input_url"`
 	OutputURL string    `json:"output_url"`
+	Language  string    `json:"language"`
 }
 
 type Worker struct {
@@ -25,7 +26,7 @@ type Worker struct {
 }
 
 type Transcriber interface {
-	Transcribe(ctx context.Context, wavePath string) (transcript.Result, error)
+	Transcribe(ctx context.Context, wavePath string, language string) (transcript.Result, error)
 }
 
 type Reporter interface {
@@ -55,7 +56,7 @@ func (w *Worker) process(ctx context.Context, msg TaskMessage) error {
 	}
 	defer os.Remove(tmpPath)
 
-	result, err := w.ts.Transcribe(ctx, tmpPath)
+	result, err := w.ts.Transcribe(ctx, tmpPath, msg.Language)
 	if err != nil {
 		return fmt.Errorf("transcribe: %w", err)
 	}

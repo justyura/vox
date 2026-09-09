@@ -26,6 +26,7 @@ message CreateTaskRequest {
   string user_id = 1;
   string input_file_id = 2;
   string type = 3;
+  string language = 4;
 }
 
 message CreateTaskResponse {
