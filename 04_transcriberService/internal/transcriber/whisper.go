@@ -3,10 +3,9 @@ package transcriber
 import (
 	"context"
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/ggerganov/whisper.cpp/bindings/go/pkg/whisper"
 	"github.com/go-audio/wav"
@@ -32,6 +31,9 @@ func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (transcript.R
 	if err != nil {
 		return transcript.Result{}, fmt.Errorf("new context: %w", err)
 	}
+	if err := wctx.SetLanguage("zh"); err != nil {
+		return transcript.Result{}, fmt.Errorf("set language: %w", err)
+	}
 
 	data, err := readWAV(wavePath)
 	if err != nil {
@@ -41,14 +43,29 @@ func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (transcript.R
 		return transcript.Result{}, fmt.Errorf("empty audio data")
 	}
 
+	// no segment callback: that path reports a single segment spanning the
+	// whole 30s window with a bogus end time. pull the real segments instead.
+	if err := wctx.Process(data, nil, nil, nil); err != nil {
+		return transcript.Result{}, fmt.Errorf("process: %w", err)
+	}
+
 	var b strings.Builder
 	segments := make([]transcript.Segment, 0)
-	cb := func(seg whisper.Segment) {
-		log.Printf("[%6s -> %6s] %s", seg.Start.Truncate(time.Millisecond), seg.End.Truncate(time.Millisecond), seg.Text)
+	for {
+		seg, err := wctx.NextSegment()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return transcript.Result{}, fmt.Errorf("next segment: %w", err)
+		}
+		// raw text for the full transcript -- whisper puts inter-word spacing
+		// in there for English, and correctly none for Chinese
 		b.WriteString(seg.Text)
+
 		text := strings.TrimSpace(seg.Text)
 		if text == "" {
-			return
+			continue
 		}
 		segments = append(segments, transcript.Segment{
 			StartMS: seg.Start.Milliseconds(),
@@ -56,9 +73,7 @@ func (w *Whisper) Transcribe(ctx context.Context, wavePath string) (transcript.R
 			Text:    text,
 		})
 	}
-	if err := wctx.Process(data, nil, cb, nil); err != nil {
-		return transcript.Result{}, fmt.Errorf("process: %w", err)
-	}
+
 	return transcript.Result{
 		Text:     strings.TrimSpace(b.String()),
 		Segments: segments,
