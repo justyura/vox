@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rabbitmq-conn
+type: Opaque
+stringData:
+  host: amqp://vox:vox@host.minikube.internal:5672/
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: rabbitmq-auth
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: rabbitmq-conn
+      key: host
