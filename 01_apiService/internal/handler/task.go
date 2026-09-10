@@ -12,6 +12,7 @@ func CreateTask(client taskpb.TaskManagerClient) gin.HandlerFunc {
 		var req struct {
 			InputFileID string `json:"input_file_id"`
 			Type        string `json:"type"`
+			Language    string `json:"language"`
 		}
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(400, gin.H{"error": "invalid request body"})
@@ -26,6 +27,7 @@ func CreateTask(client taskpb.TaskManagerClient) gin.HandlerFunc {
 			UserId:      userID,
 			InputFileId: req.InputFileID,
 			Type:        req.Type,
+			Language:    req.Language,
 		})
 		if err != nil {
 			c.JSON(500, gin.H{

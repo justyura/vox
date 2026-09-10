@@ -18,23 +18,60 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func main() {
+type config struct {
+	modelPath string
+	taskAddr  string
+	rabbitURL string
+}
+
+func loadconfig() (config, error) {
 	_ = godotenv.Load()
-	ts, err := transcriber.New(os.Getenv("MODEL_PATH"))
+
+	cfg := config{
+		modelPath: os.Getenv("MODEL_PATH"),
+		taskAddr:  os.Getenv("TASK_SERVER_ADDR"),
+		rabbitURL: os.Getenv("RABBITMQ_ADDR"),
+	}
+
+	switch {
+	case cfg.modelPath == "":
+		return cfg, fmt.Errorf("MODEL_PATH is required")
+	case cfg.taskAddr == "":
+		return cfg, fmt.Errorf("TASK_SERVER_ADDR is required")
+	case cfg.rabbitURL == "":
+		return cfg, fmt.Errorf("RABBITMQ_ADDR is required")
+	}
+
+	return cfg, nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+	cfg, err := loadconfig()
+	if err != nil {
+		return err
+	}
+	// transcriber
+	ts, err := transcriber.New(cfg.modelPath)
 	if err != nil {
 		log.Fatalf("failed to load model: %v", err)
 	}
-	conn, err := grpc.NewClient(os.Getenv("TASK_SERVER_ADDR"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	// reporter
+	conn, err := grpc.NewClient(cfg.taskAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal("cannot initiate grpc client")
 	}
 	rp := reporter.New(taskpb.NewTaskManagerClient(conn))
 
 	w := worker.NewWorker(ts, rp)
-
-	addr := os.Getenv("RABBITMQ_ADDR")
 	for {
-		if err := consume(addr, w); err != nil {
+		if err := consume(cfg.rabbitURL, w); err != nil {
 			log.Printf("consume %v", err)
 		}
 		log.Println("connection lost, reconnecting in 5s...")

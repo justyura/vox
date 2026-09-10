@@ -127,6 +127,7 @@ type CreateTaskRequest struct {
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	InputFileId   string                 `protobuf:"bytes,2,opt,name=input_file_id,json=inputFileId,proto3" json:"input_file_id,omitempty"`
 	Type          string                 `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	Language      string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -178,6 +179,13 @@ func (x *CreateTaskRequest) GetInputFileId() string {
 func (x *CreateTaskRequest) GetType() string {
 	if x != nil {
 		return x.Type
+	}
+	return ""
+}
+
+func (x *CreateTaskRequest) GetLanguage() string {
+	if x != nil {
+		return x.Language
 	}
 	return ""
 }
@@ -506,11 +514,12 @@ const file_task_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12;\n" +
 	"\vfinished_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"finishedAt\"d\n" +
+	"finishedAt\"\x80\x01\n" +
 	"\x11CreateTaskRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\"\n" +
 	"\rinput_file_id\x18\x02 \x01(\tR\vinputFileId\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\tR\x04type\"-\n" +
+	"\x04type\x18\x03 \x01(\tR\x04type\x12\x1a\n" +
+	"\blanguage\x18\x04 \x01(\tR\blanguage\"-\n" +
 	"\x12CreateTaskResponse\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\"+\n" +
 	"\x10ListTasksRequest\x12\x17\n" +
