@@ -20,11 +20,18 @@ func NewTaskServer(st meta.Store, fc client.FileClient, ds distributor.Distribut
 	return &TaskServer{st: st, fc: fc, ds: ds}
 }
 
-func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UUID, taskType string) (uuid.UUID, error) {
+func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UUID, taskType string, language string) (uuid.UUID, error) {
+	// create task
 	taskID := uuid.New()
+
+	stage := taskType
+	if taskType == "transcribe" {
+		stage = "transcode"
+	}
+
 	task := &model.Task{
 		TaskID: taskID, UserID: userID, InputFileID: inputFileID,
-		Type: taskType, Status: model.StatusPending,
+		Type: taskType, Stage: stage, Language: language, Status: model.StatusPending,
 	}
 
 	inputURL, outputURL, outputFileID, err := t.fc.Request(ctx, userID, inputFileID, "result-"+taskID.String())
@@ -35,10 +42,12 @@ func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UU
 	if err := t.st.Create(ctx, task); err != nil {
 		return taskID, err
 	}
-	if err := t.ds.Distribute(ctx, taskID, inputURL, outputURL, taskType); err != nil {
+
+	// stage is the routing key
+	if err := t.ds.Distribute(ctx, taskID, inputURL, outputURL, stage, language); err != nil {
 		return taskID, err
 	}
-	if err := t.UpdateStatus(ctx, taskID, model.StatusDispatched); err != nil {
+	if err := t.st.UpdateStatus(ctx, taskID, model.StatusDispatched); err != nil {
 		return taskID, err
 	}
 	return taskID, nil
@@ -52,17 +61,29 @@ func (t *TaskServer) GetTask(ctx context.Context, taskid uuid.UUID) (model.Task,
 	return t.st.Get(ctx, taskid)
 }
 
-func (t *TaskServer) UpdateStatus(ctx context.Context, jobID uuid.UUID, status string) error {
-	if err := t.st.UpdateStatus(ctx, jobID, status); err != nil {
-		return err
-	}
+func (t *TaskServer) ReportStage(ctx context.Context, jobID uuid.UUID, status string) error {
 	if status != model.StatusCompleted {
-		return nil
+		return t.st.UpdateStatus(ctx, jobID, status)
 	}
 
 	task, err := t.st.Get(ctx, jobID)
 	if err != nil {
 		return err
 	}
-	return t.fc.Complete(ctx, task.UserID, task.OutputFileID)
+
+	if err := t.fc.Complete(ctx, task.UserID, task.OutputFileID); err != nil {
+		return err
+	}
+
+	if task.Stage == "transcode" {
+		inputURL, outputURL, outputFileID, err := t.fc.Request(ctx, task.UserID, task.OutputFileID, "result-"+jobID.String()+"-transcribe")
+		if err != nil {
+			return err
+		}
+		if err := t.st.Advance(ctx, jobID, "transcribe", outputFileID); err != nil {
+			return err
+		}
+		return t.ds.Distribute(ctx, jobID, inputURL, outputURL, "transcribe", task.Language)
+	}
+	return t.st.UpdateStatus(ctx, jobID, model.StatusCompleted)
 }

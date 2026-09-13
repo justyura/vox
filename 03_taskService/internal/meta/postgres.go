@@ -22,9 +22,9 @@ func NewPostgres(ctx context.Context, databaseURL string) (*Postgres, error) {
 
 func (p *Postgres) Create(ctx context.Context, t *model.Task) error {
 	_, err := p.conn.Exec(ctx,
-		`INSERT INTO tasks (id, task_type, user_id, input_file_id, result_file_id, status)
-			 VALUES ($1, $2, $3, $4, $5, $6)`,
-		t.TaskID, t.Type, t.UserID, t.InputFileID, t.OutputFileID, t.Status)
+		`INSERT INTO tasks (id, task_type, stage, language, user_id, input_file_id, result_file_id, status)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		t.TaskID, t.Type, t.Stage, t.Language, t.UserID, t.InputFileID, t.OutputFileID, t.Status)
 	return err
 }
 
@@ -37,17 +37,26 @@ func (p *Postgres) UpdateStatus(ctx context.Context, taskID uuid.UUID, status st
 	return err
 }
 
+func (p *Postgres) Advance(ctx context.Context, taskID uuid.UUID, stage string, outputFileID uuid.UUID) error {
+	_, err := p.conn.Exec(ctx,
+		`UPDATE tasks SET stage=$2, result_file_id=$3, status=$4 WHERE id=$1`,
+		taskID, stage, outputFileID, model.StatusDispatched)
+	return err
+}
+
 func (p *Postgres) Get(ctx context.Context, taskID uuid.UUID) (model.Task, error) {
 	var t model.Task
 	err := p.conn.QueryRow(ctx,
-		`SELECT id, task_type, user_id, input_file_id, result_file_id, status, created_at, finished_at
+		`SELECT id, task_type, stage, language, user_id, input_file_id, result_file_id, status, created_at, finished_at
 			 FROM tasks WHERE id=$1`, taskID).
-		Scan(&t.TaskID, &t.Type, &t.UserID, &t.InputFileID, &t.OutputFileID, &t.Status, &t.CreatedAt, &t.FinishedAt)
+		Scan(&t.TaskID, &t.Type, &t.Stage, &t.Language, &t.UserID, &t.InputFileID, &t.OutputFileID, &t.Status, &t.CreatedAt, &t.FinishedAt)
 	return t, err
 }
 
 func (p *Postgres) List(ctx context.Context, userID uuid.UUID) ([]model.Task, error) {
-	rows, err := p.conn.Query(ctx, `SELECT id, task_type, user_id, input_file_id, result_file_id, status, created_at, finished_at FROM tasks WHERE user_id=$1`, userID)
+	rows, err := p.conn.Query(ctx,
+		`SELECT id, task_type, stage, language, user_id, input_file_id, result_file_id, status, created_at, finished_at
+			 FROM tasks WHERE user_id=$1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +65,7 @@ func (p *Postgres) List(ctx context.Context, userID uuid.UUID) ([]model.Task, er
 	tasks := make([]model.Task, 0)
 	for rows.Next() {
 		var t model.Task
-		if err := rows.Scan(&t.TaskID, &t.Type, &t.UserID, &t.InputFileID, &t.OutputFileID, &t.Status, &t.CreatedAt, &t.FinishedAt); err != nil {
+		if err := rows.Scan(&t.TaskID, &t.Type, &t.Stage, &t.Language, &t.UserID, &t.InputFileID, &t.OutputFileID, &t.Status, &t.CreatedAt, &t.FinishedAt); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)

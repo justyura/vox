@@ -12,4 +12,5 @@ type Store interface {
 	List(ctx context.Context, user uuid.UUID) ([]model.Task, error)
 	Get(ctx context.Context, taskid uuid.UUID) (model.Task, error)
 	UpdateStatus(ctx context.Context, taskID uuid.UUID, status string) error
+	Advance(ctx context.Context, taskID uuid.UUID, stage string, outputFileID uuid.UUID) error
 }

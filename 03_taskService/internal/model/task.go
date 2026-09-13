@@ -16,7 +16,9 @@ const (
 
 type Task struct {
 	TaskID       uuid.UUID
-	Type         string
+	Type         string // what the user asked for
+	Stage        string // which step is running right now
+	Language     string
 	UserID       uuid.UUID
 	InputFileID  uuid.UUID
 	OutputFileID uuid.UUID

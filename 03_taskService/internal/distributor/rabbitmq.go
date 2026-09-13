@@ -27,7 +27,7 @@ func NewRabbitMQ(ch *amqp.Channel) (*RabbitMQ, error) {
 		return nil, err
 	}
 
-	for _, q := range []string{"transcribe", "summarize"} {
+	for _, q := range []string{"transcribe", "transcode"} {
 		if _, err := ch.QueueDeclare(q, true, false, false, false, nil); err != nil {
 			return nil, err
 		}

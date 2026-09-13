@@ -34,7 +34,7 @@ func (gs *GRPCServer) CreateTask(ctx context.Context, req *taskpb.CreateTaskRequ
 	}
 	tasktype := req.Type
 
-	taskid, err := gs.ts.CreateTask(ctx, userid, fileid, tasktype)
+	taskid, err := gs.ts.CreateTask(ctx, userid, fileid, tasktype, req.Language)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (gs *GRPCServer) UpdateStatus(ctx context.Context, req *taskpb.UpdateStatus
 	if s != model.StatusCompleted && s != model.StatusFailed {
 		return nil, status.Error(codes.InvalidArgument, "invalid status")
 	}
-	if err := gs.ts.UpdateStatus(ctx, taskid, s); err != nil {
+	if err := gs.ts.ReportStage(ctx, taskid, s); err != nil {
 		return nil, err
 	}
 	return &taskpb.UpdateStatusResponse{}, nil
