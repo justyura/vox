@@ -106,6 +106,13 @@ services:
       TASK_SERVER_ADDR: task:50052
       RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
 
+  transcoder:
+    image: vox-transcode:dev
+    restart: always
+    environment:
+      TASK_SERVER_ADDR: task:50052
+      RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
+
 
 volumes:
   userdata:
