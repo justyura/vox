@@ -35,6 +35,7 @@
     fileInput: document.querySelector("#file-input"),
     selectedFile: document.querySelector("#selected-file"),
     selectedFileName: document.querySelector("#selected-file-name"),
+    selectedFileIcon: document.querySelector("#selected-file-icon"),
     selectedFileMeta: document.querySelector("#selected-file-meta"),
     removeFile: document.querySelector("#remove-file"),
     audioPreview: document.querySelector("#audio-preview"),
@@ -263,16 +264,15 @@
 
   function chooseFile(file) {
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".wav")) {
-      showToast("当前版本只支持 WAV 文件。", true);
-      return;
-    }
 
     clearSelectedFile();
     state.selectedFile = file;
     state.audioURL = URL.createObjectURL(file);
     elements.selectedFileName.textContent = file.name;
-    elements.selectedFileMeta.textContent = `${formatBytes(file.size)} · audio/wav`;
+    elements.selectedFileIcon.textContent = file.name.includes(".")
+      ? file.name.split(".").pop().slice(0, 4).toUpperCase()
+      : "FILE";
+    elements.selectedFileMeta.textContent = `${formatBytes(file.size)} · ${file.type || "unknown type"}`;
     elements.selectedFile.hidden = false;
     elements.audioPreview.src = state.audioURL;
     elements.audioPreview.hidden = false;

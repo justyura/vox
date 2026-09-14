@@ -133,7 +133,7 @@
             <span class="section-number">01 / TRANSCRIBE</span>
             <h2>转写工作台</h2>
           </div>
-          <p>选择一段 16kHz 单声道 WAV 音频，观察它如何经过完整的异步处理链路。</p>
+          <p>上传一段音频或视频，观察它如何经过转码、转写的完整异步处理链路。</p>
         </div>
 
         <div class="auth-card section-shell" id="auth-card">
@@ -177,23 +177,23 @@
             <div class="panel-header">
               <div>
                 <span class="panel-kicker">INPUT</span>
-                <h3>选择音频</h3>
+                <h3>选择音频或视频</h3>
               </div>
-              <span class="format-badge">WAV · 16kHz · MONO</span>
+              <span class="format-badge">AUDIO · VIDEO</span>
             </div>
 
-            <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="选择或拖入 WAV 音频">
-              <input id="file-input" type="file" accept=".wav,audio/wav" hidden>
+            <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="选择或拖入音频或视频">
+              <input id="file-input" type="file" accept="audio/*,video/*" hidden>
               <div class="drop-visual" aria-hidden="true">
                 <span></span><span></span><span></span><span></span><span></span>
               </div>
-              <strong>将音频拖到这里</strong>
+              <strong>将音频或视频拖到这里</strong>
               <p>或点击浏览本地文件</p>
-              <button class="browse-button" id="browse-button" type="button">选择 WAV 文件</button>
+              <button class="browse-button" id="browse-button" type="button">选择文件</button>
             </div>
 
             <div class="selected-file" id="selected-file" hidden>
-              <div class="file-icon" aria-hidden="true">WAV</div>
+              <div class="file-icon" id="selected-file-icon" aria-hidden="true">FILE</div>
               <div class="file-main">
                 <strong id="selected-file-name"></strong>
                 <span id="selected-file-meta"></span>
@@ -209,7 +209,7 @@
             </button>
 
             <p class="input-note">
-              当前推理器要求 16kHz 单声道 WAV；通用音频格式转换将在后续版本加入。
+              常见音视频格式都可以直接上传，系统会先自动转码成 16kHz 单声道，再交给 whisper 转写。
             </p>
           </div>
 
@@ -296,7 +296,7 @@
             <aside class="result-metrics" aria-label="本次任务摘要">
               <div><small>END-TO-END</small><strong id="result-duration">—</strong></div>
               <div><small>AUDIO LENGTH</small><strong id="audio-duration">—</strong></div>
-              <div><small>MODEL</small><strong>whisper.cpp / tiny</strong></div>
+              <div><small>MODEL</small><strong>whisper.cpp</strong></div>
               <div><small>STATUS</small><strong class="success-text">Completed</strong></div>
             </aside>
           </div>
