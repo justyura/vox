@@ -1,6 +1,10 @@
 (() => {
   "use strict";
 
+  // every call to our own backend goes through this prefix;
+  // presigned object-storage URLs are absolute and bypass it.
+  const API = "/api/v1";
+
   const state = {
     authMode: "login",
     token: window.localStorage.getItem("vox_token") || "",
@@ -118,7 +122,7 @@
     }
 
     try {
-      const response = await fetch("/whoami", {
+      const response = await fetch(`${API}/whoami`, {
         headers: authHeaders(),
       });
       if (!response.ok) {
@@ -158,7 +162,7 @@
     elements.authMessage.textContent = "";
     elements.authSubmit.disabled = true;
 
-    const endpoint = state.authMode === "login" ? "/login" : "/signup";
+    const endpoint = state.authMode === "login" ? `${API}/login` : `${API}/signup`;
     const form = new URLSearchParams({
       email: elements.email.value.trim(),
       password: elements.password.value,
@@ -361,7 +365,7 @@
       return;
     }
 
-    const response = await fetch(`/download/${encodeURIComponent(inputID)}`, {
+    const response = await fetch(`${API}/download/${encodeURIComponent(inputID)}`, {
       headers: authHeaders(),
     });
     const data = await parseResponse(response);
@@ -474,7 +478,7 @@
     elements.currentStatus.textContent = "正在申请上传地址";
 
     try {
-      const uploadResponse = await fetch("/upload", {
+      const uploadResponse = await fetch(`${API}/upload`, {
         method: "POST",
         headers: authHeaders(),
         body: new URLSearchParams({ filename: state.selectedFile.name }),
@@ -495,7 +499,7 @@
 
       elements.currentStatus.textContent = "正在确认上传结果";
       const completeResponse = await fetch(
-        `/files/${encodeURIComponent(uploadData.file_id)}/complete`,
+        `${API}/files/${encodeURIComponent(uploadData.file_id)}/complete`,
         { method: "POST", headers: authHeaders() },
       );
       const completeData = await parseResponse(completeResponse);
@@ -507,7 +511,7 @@
       setStep("queue", "active");
       elements.currentStatus.textContent = "正在创建异步任务";
 
-      const taskResponse = await fetch("/tasks", {
+      const taskResponse = await fetch(`${API}/tasks`, {
         method: "POST",
         headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
@@ -545,7 +549,7 @@
     if (!state.taskID) return;
 
     try {
-      const response = await fetch(`/tasks/${encodeURIComponent(state.taskID)}`, {
+      const response = await fetch(`${API}/tasks/${encodeURIComponent(state.taskID)}`, {
         headers: authHeaders(),
       });
       const data = await parseResponse(response);
@@ -593,7 +597,7 @@
       throw new Error("任务缺少结果文件");
     }
 
-    const response = await fetch(`/download/${encodeURIComponent(outputID)}`, {
+    const response = await fetch(`${API}/download/${encodeURIComponent(outputID)}`, {
       headers: authHeaders(),
     });
     const data = await parseResponse(response);
@@ -653,7 +657,7 @@
   async function loadTasks() {
     if (!state.token) return;
     try {
-      const response = await fetch("/tasks", { headers: authHeaders() });
+      const response = await fetch(`${API}/tasks`, { headers: authHeaders() });
       const data = await parseResponse(response);
       if (!response.ok) throw new Error(messageFrom(data, "无法读取最近任务"));
       renderTasks(Array.isArray(data.tasks) ? data.tasks : []);

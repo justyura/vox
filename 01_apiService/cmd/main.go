@@ -71,10 +71,11 @@ func main() {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
 	})
 
-	r.POST("/signup", handler.SignUp(store, jwtSecret))
-	r.POST("/login", handler.Login(store, jwtSecret))
+	api := r.Group("/api/v1")
+	api.POST("/signup", handler.SignUp(store, jwtSecret))
+	api.POST("/login", handler.Login(store, jwtSecret))
 
-	authorized := r.Group("/")
+	authorized := api.Group("/")
 	authorized.Use(handler.Auth(jwtSecret))
 	{
 		authorized.GET("/whoami", handler.Whoami())
