@@ -37,6 +37,7 @@ func (w *Whisper) Transcribe(ctx context.Context, wavePath string, language stri
 	if err := wctx.SetLanguage(language); err != nil {
 		return transcript.Result{}, fmt.Errorf("set language: %w", err)
 	}
+	wctx.SetBeamSize(5)
 
 	data, err := readWAV(wavePath)
 	if err != nil {
