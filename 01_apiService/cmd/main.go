@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
-	"io/fs"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +12,6 @@ import (
 	"github.com/justyura/vox/01_apiService/internal/handler"
 	"github.com/justyura/vox/01_apiService/internal/meta"
 	"github.com/justyura/vox/01_apiService/internal/migrations"
-	webassets "github.com/justyura/vox/01_apiService/web"
 	filepb "github.com/justyura/vox/02_fileService/proto"
 	taskpb "github.com/justyura/vox/03_taskService/proto"
 	"google.golang.org/grpc"
@@ -57,19 +54,6 @@ func main() {
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 
 	r := gin.Default()
-	assets, err := webassets.FS()
-	if err != nil {
-		log.Fatal(err)
-	}
-	indexHTML, err := fs.ReadFile(assets, "index.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-	assetsHTTP := http.FS(assets)
-	r.StaticFS("/assets", assetsHTTP)
-	r.GET("/", func(c *gin.Context) {
-		c.Data(http.StatusOK, "text/html; charset=utf-8", indexHTML)
-	})
 
 	api := r.Group("/api/v1")
 	api.POST("/signup", handler.SignUp(store, jwtSecret))

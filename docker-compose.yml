@@ -70,6 +70,15 @@ services:
       FILE_SERVICE_ADDR: file:50051
       TASK_SERVICE_ADDR: task:50052
 
+  web:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
   file:
     image: vox-file:dev
     restart: always
