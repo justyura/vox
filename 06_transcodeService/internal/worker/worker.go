@@ -106,7 +106,7 @@ func upload(ctx context.Context, targetURL string, body io.Reader, size int64) e
 		return err
 	}
 
-	// req.ContentLength = size
+	req.ContentLength = size
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
