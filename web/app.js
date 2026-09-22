@@ -503,6 +503,7 @@
     $("result-player")?.pause();
     state.detail = { kind, id };
     state.detailVersion++;
+    $("detail").classList.remove("is-reading");
     $("detail-kind").textContent =
       kind === "task" ? "TASK DETAILS" : "FILE DETAILS";
     $("detail-title").textContent = kind === "task" ? "任务详情" : "文件详情";
@@ -550,6 +551,8 @@
     $("result-player")?.pause();
     renderTaskDetail(task);
     state.detail.reading = true;
+    // A wider dialog gives the video room to be the focus while reading.
+    $("detail").classList.add("is-reading");
     $("detail-kind").textContent = "TRANSCRIPT";
     $("detail-title").textContent = fileName(task.input_file_id);
     // Reading comes first; metadata stays available without another navigation.
@@ -770,17 +773,52 @@
       const body = $("result-body");
       body.innerHTML = `<h3>转写结果</h3><div class="detail-actions"><button id="copy-text">复制文本</button><button id="save-text">下载文本</button></div><div id="player-slot"></div><div class="transcript"></div>`;
       const content = body.querySelector(".transcript");
+      // word (lower case) -> translation; filled in once the vocabulary service answers.
+      const vocab = new Map();
+      const vocabKey = (word) => word.toLowerCase().replace(/’/g, "'");
+      const highlight = (line) => {
+        let html = "",
+          last = 0;
+        for (const m of line.matchAll(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)) {
+          const tr = vocab.get(vocabKey(m[0]));
+          if (tr === undefined) continue;
+          html += `${escape(line.slice(last, m.index))}<mark class="vocab-mark" title="${escape(tr)}">${escape(m[0])}</mark>`;
+          last = m.index + m[0].length;
+        }
+        return html + escape(line.slice(last));
+      };
       if (segments.length)
         content.innerHTML = segments
           .map((s, index) => {
             const start = Number(s.start_ms) / 1000;
             const end = Number(s.end_ms) / 1000;
             const next = Number(segments[index + 1]?.start_ms) / 1000;
-            return `<button type="button" class="segment" data-seek="${start}" data-end="${Number.isFinite(end) && end > start ? end : Number.isFinite(next) && next > start ? next : Infinity}"><span class="segment-time">${Math.floor(start / 60)}:${String(Math.floor(start) % 60).padStart(2, "0")}</span><span>${escape(s.text)}</span></button>`;
+            return `<button type="button" class="segment" data-index="${index}" data-seek="${start}" data-end="${Number.isFinite(end) && end > start ? end : Number.isFinite(next) && next > start ? next : Infinity}"><span class="segment-time">${Math.floor(start / 60)}:${String(Math.floor(start) % 60).padStart(2, "0")}</span><span class="segment-text">${escape(s.text)}</span></button>`;
           })
           .join("");
       else content.textContent = text || "结果文件为空。";
       const follow = segments.length ? setupFollowing(content) : () => {};
+      // The caption floats over the video and shows the current line plus its new words.
+      const caption = document.createElement("div");
+      caption.className = "stage-caption";
+      let captionIndex = null;
+      const renderCaption = (index, force = false) => {
+        if (index === captionIndex && !force) return;
+        captionIndex = index;
+        const line = index === null ? "" : segments[index].text.trim();
+        const words = [
+          ...new Set(
+            [...line.matchAll(/[A-Za-z]+(?:['’][A-Za-z]+)*/g)]
+              .map((m) => vocabKey(m[0]))
+              .filter((w) => vocab.has(w)),
+          ),
+        ];
+        caption.hidden = !line;
+        caption.innerHTML = line
+          ? `<p class="caption-line">${highlight(line)}</p>${words.length ? `<ul class="caption-words">${words.map((w) => `<li><b>${escape(w)}</b>${escape(vocab.get(w))}</li>`).join("")}</ul>` : ""}`
+          : "";
+      };
+      caption.hidden = true;
       $("copy-text").onclick = async () => {
         try {
           await navigator.clipboard.writeText(text);
@@ -799,6 +837,17 @@
         a.click();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       };
+      // Not awaited: the word list must not hold up the transcript or player.
+      loadVocab(text, version).then((words) => {
+        if (version !== state.detailVersion || !words.length) return;
+        for (const w of words) vocab.set(vocabKey(w.word), w.translation);
+        content.querySelectorAll(".segment").forEach((el) => {
+          el.querySelector(".segment-text").innerHTML = highlight(
+            segments[el.dataset.index].text,
+          );
+        });
+        renderCaption(captionIndex, true);
+      });
       if (task.input_file_id) {
         try {
           const media = await request(
@@ -817,6 +866,32 @@
           player.preload = "metadata";
           player.src = safeURL(media.download_url);
           player.id = "result-player";
+          // The stage holds the player and its caption, so fullscreen keeps both.
+          const stage = document.createElement("div");
+          stage.className = audioOnly ? "stage is-audio" : "stage";
+          stage.append(player, caption);
+          if (!audioOnly) {
+            // Native fullscreen would show the bare video without the caption.
+            player.setAttribute("controlslist", "nofullscreen");
+            const full = document.createElement("button");
+            full.type = "button";
+            full.className = "stage-full";
+            full.textContent = "⛶ 全屏";
+            full.onclick = () => {
+              if (document.fullscreenElement) document.exitFullscreen();
+              else if (stage.requestFullscreen) stage.requestFullscreen();
+              else if (stage.webkitRequestFullscreen)
+                stage.webkitRequestFullscreen();
+              // iPhone Safari can only fullscreen the video element itself.
+              else player.webkitEnterFullscreen?.();
+            };
+            player.addEventListener("dblclick", () => full.click());
+            stage.addEventListener("fullscreenchange", () => {
+              full.textContent =
+                document.fullscreenElement === stage ? "✕ 退出全屏" : "⛶ 全屏";
+            });
+            stage.append(full);
+          }
           const sync = () => {
             if (version !== state.detailVersion) return;
             if (
@@ -829,15 +904,19 @@
                 ? Math.min(target, player.duration)
                 : target;
             }
+            let current = null;
             body.querySelectorAll("[data-seek]").forEach((segment) => {
               const active =
                 !player.ended &&
                 player.currentTime >= Number(segment.dataset.seek) &&
                 player.currentTime < Number(segment.dataset.end);
               segment.classList.toggle("is-playing", active);
-              if (active) segment.setAttribute("aria-current", "true");
-              else segment.removeAttribute("aria-current");
+              if (active) {
+                segment.setAttribute("aria-current", "true");
+                current = Number(segment.dataset.index);
+              } else segment.removeAttribute("aria-current");
             });
+            if (segments.length) renderCaption(current);
             follow();
           };
           for (const event of [
@@ -852,7 +931,7 @@
               $("player-slot").textContent =
                 "浏览器无法播放该源文件，可从文件详情下载。";
           };
-          $("player-slot").append(player);
+          $("player-slot").append(stage);
         } catch (e) {
           if (version === state.detailVersion && e.name !== "AbortError")
             $("player-slot").textContent = `音视频加载失败：${e.message}`;
@@ -862,6 +941,39 @@
       if (version === state.detailVersion && e.name !== "AbortError")
         $("result-body").innerHTML =
           `<p class="message error">无法读取结果：${escape(e.message)}</p>${button("result", task.task_id, "重试读取结果")}`;
+    }
+  }
+  // The vocabulary service is stateless and fast, so the list is computed on
+  // every render instead of being stored with the task.
+  async function loadVocab(text, version) {
+    const section = document.createElement("section");
+    section.className = "detail-section";
+    section.id = "vocab-body";
+    section.innerHTML = '<h3>生词</h3><p class="muted">正在提取生词…</p>';
+    $("result-slot").append(section);
+    try {
+      // Same origin as the page; nginx forwards /vocab/ to the vocabulary service.
+      const response = await fetch("/vocab/v1/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const { words } = await response.json();
+      if (version !== state.detailVersion) return [];
+      section.innerHTML = words.length
+        ? `<h3>生词 <span class="muted">${words.length} 个</span></h3><ul class="vocab-list">${words
+            .map(
+              (w) =>
+                `<li><span class="vocab-word">${escape(w.word)}</span><span class="vocab-count">×${w.count}</span><span class="vocab-tr">${escape(w.translation)}</span></li>`,
+            )
+            .join("")}</ul>`
+        : '<h3>生词</h3><p class="muted">没有找到生词。</p>';
+      return words;
+    } catch (e) {
+      if (version === state.detailVersion)
+        section.innerHTML = `<h3>生词</h3><p class="muted">生词提取失败：${escape(e.message)}</p>`;
+      return [];
     }
   }
   function releaseMic() {

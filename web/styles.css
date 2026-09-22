@@ -717,6 +717,196 @@ dialog > header button {
   max-height: 360px;
   overflow: auto;
 }
+#detail.is-reading {
+  width: min(1200px, calc(100vw - 32px));
+}
+.vocab-mark {
+  background: #fdf0c4;
+  color: inherit;
+  border-bottom: 2px solid #e2b93b;
+  border-radius: 2px;
+  padding: 0 1px;
+  cursor: help;
+}
+
+/* Player stage: the video with its caption floating over the lower part. */
+.stage {
+  position: relative;
+  margin-bottom: 18px;
+}
+.stage video {
+  display: block;
+  width: 100%;
+  max-height: 70vh;
+  margin: 0;
+  background: #000;
+  border-radius: 8px;
+}
+.stage audio {
+  margin: 0;
+}
+.stage-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 92%;
+  text-align: center;
+  pointer-events: none;
+}
+.caption-line {
+  display: inline;
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #000000b3;
+  color: #fff;
+  font-size: 17px;
+  line-height: 1.7;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.caption-line .vocab-mark {
+  background: #f5c542;
+  color: #111;
+  border-bottom: 0;
+}
+.caption-words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.caption-words li {
+  padding: 3px 9px;
+  border-radius: 5px;
+  background: #fff8dceb;
+  color: #1d2a26;
+  font-size: 12px;
+}
+.caption-words b {
+  margin-right: 6px;
+}
+.stage.is-audio .stage-caption {
+  position: static;
+  transform: none;
+  width: auto;
+  max-width: none;
+  margin-top: 12px;
+  text-align: left;
+}
+.stage.is-audio .caption-line {
+  background: var(--pale);
+  color: var(--ink);
+}
+.stage.is-audio .caption-words {
+  justify-content: flex-start;
+}
+.stage-full {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-height: 0;
+  padding: 5px 10px;
+  border: 0;
+  background: #0000008c;
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.stage:hover .stage-full,
+.stage-full:focus-visible {
+  opacity: 1;
+}
+.stage-full:hover {
+  background: #000000cc;
+}
+@media (hover: none) {
+  .stage-full {
+    opacity: 1;
+  }
+}
+.stage:fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.stage:fullscreen video {
+  height: 100%;
+  max-height: 100vh;
+  border-radius: 0;
+}
+.stage:fullscreen .stage-caption {
+  bottom: 90px;
+}
+.stage:fullscreen .caption-line {
+  font-size: 28px;
+}
+.stage:fullscreen .caption-words li {
+  font-size: 17px;
+}
+/* Kept separate: an unknown selector would void the whole rule in older Safari. */
+.stage:-webkit-full-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.stage:-webkit-full-screen video {
+  height: 100%;
+  max-height: 100vh;
+  border-radius: 0;
+}
+@media (max-width: 780px) {
+  .stage-caption {
+    bottom: 56px;
+  }
+  .caption-line {
+    font-size: 14px;
+  }
+}
+
+.vocab-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 360px;
+  overflow: auto;
+  font-size: 13px;
+}
+.vocab-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.vocab-word {
+  font-weight: 600;
+  min-width: 9em;
+}
+.vocab-count {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--green);
+  min-width: 3em;
+}
+.vocab-tr {
+  color: var(--muted);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 780px) {
+  .vocab-word {
+    min-width: 6em;
+  }
+}
 .segment {
   display: flex;
   align-items: baseline;
