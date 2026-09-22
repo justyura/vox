@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TaskManager_CreateTask_FullMethodName   = "/task.TaskManager/CreateTask"
-	TaskManager_ListTasks_FullMethodName    = "/task.TaskManager/ListTasks"
-	TaskManager_GetTask_FullMethodName      = "/task.TaskManager/GetTask"
-	TaskManager_UpdateStatus_FullMethodName = "/task.TaskManager/UpdateStatus"
+	TaskManager_CreateTask_FullMethodName         = "/task.TaskManager/CreateTask"
+	TaskManager_ListTasks_FullMethodName          = "/task.TaskManager/ListTasks"
+	TaskManager_GetTask_FullMethodName            = "/task.TaskManager/GetTask"
+	TaskManager_UpdateStatus_FullMethodName       = "/task.TaskManager/UpdateStatus"
+	TaskManager_DeleteTasksByInput_FullMethodName = "/task.TaskManager/DeleteTasksByInput"
 )
 
 // TaskManagerClient is the client API for TaskManager service.
@@ -33,6 +34,7 @@ type TaskManagerClient interface {
 	ListTasks(ctx context.Context, in *ListTasksRequest, opts ...grpc.CallOption) (*ListTasksResponse, error)
 	GetTask(ctx context.Context, in *GetTaskRequest, opts ...grpc.CallOption) (*GetTaskResponse, error)
 	UpdateStatus(ctx context.Context, in *UpdateStatusRequest, opts ...grpc.CallOption) (*UpdateStatusResponse, error)
+	DeleteTasksByInput(ctx context.Context, in *DeleteTasksByInputRequest, opts ...grpc.CallOption) (*DeleteTasksByInputResponse, error)
 }
 
 type taskManagerClient struct {
@@ -83,6 +85,16 @@ func (c *taskManagerClient) UpdateStatus(ctx context.Context, in *UpdateStatusRe
 	return out, nil
 }
 
+func (c *taskManagerClient) DeleteTasksByInput(ctx context.Context, in *DeleteTasksByInputRequest, opts ...grpc.CallOption) (*DeleteTasksByInputResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteTasksByInputResponse)
+	err := c.cc.Invoke(ctx, TaskManager_DeleteTasksByInput_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TaskManagerServer is the server API for TaskManager service.
 // All implementations must embed UnimplementedTaskManagerServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type TaskManagerServer interface {
 	ListTasks(context.Context, *ListTasksRequest) (*ListTasksResponse, error)
 	GetTask(context.Context, *GetTaskRequest) (*GetTaskResponse, error)
 	UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error)
+	DeleteTasksByInput(context.Context, *DeleteTasksByInputRequest) (*DeleteTasksByInputResponse, error)
 	mustEmbedUnimplementedTaskManagerServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedTaskManagerServer) GetTask(context.Context, *GetTaskRequest) 
 }
 func (UnimplementedTaskManagerServer) UpdateStatus(context.Context, *UpdateStatusRequest) (*UpdateStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateStatus not implemented")
+}
+func (UnimplementedTaskManagerServer) DeleteTasksByInput(context.Context, *DeleteTasksByInputRequest) (*DeleteTasksByInputResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteTasksByInput not implemented")
 }
 func (UnimplementedTaskManagerServer) mustEmbedUnimplementedTaskManagerServer() {}
 func (UnimplementedTaskManagerServer) testEmbeddedByValue()                     {}
@@ -206,6 +222,24 @@ func _TaskManager_UpdateStatus_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TaskManager_DeleteTasksByInput_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTasksByInputRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TaskManagerServer).DeleteTasksByInput(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TaskManager_DeleteTasksByInput_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TaskManagerServer).DeleteTasksByInput(ctx, req.(*DeleteTasksByInputRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TaskManager_ServiceDesc is the grpc.ServiceDesc for TaskManager service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +262,10 @@ var TaskManager_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateStatus",
 			Handler:    _TaskManager_UpdateStatus_Handler,
+		},
+		{
+			MethodName: "DeleteTasksByInput",
+			Handler:    _TaskManager_DeleteTasksByInput_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

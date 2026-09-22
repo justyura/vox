@@ -2,6 +2,7 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/justyura/vox/03_taskService/internal/model"
@@ -84,6 +85,24 @@ func (gs *GRPCServer) UpdateStatus(ctx context.Context, req *taskpb.UpdateStatus
 		return nil, err
 	}
 	return &taskpb.UpdateStatusResponse{}, nil
+}
+
+func (gs *GRPCServer) DeleteTasksByInput(ctx context.Context, req *taskpb.DeleteTasksByInputRequest) (*taskpb.DeleteTasksByInputResponse, error) {
+	userid, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid user_id")
+	}
+	fileid, err := uuid.Parse(req.InputFileId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid input_file_id")
+	}
+	if err := gs.ts.DeleteByInput(ctx, userid, fileid); err != nil {
+		if errors.Is(err, service.ErrTaskActive) {
+			return nil, status.Error(codes.FailedPrecondition, "a task for this file is still running")
+		}
+		return nil, status.Error(codes.Internal, "delete tasks failed")
+	}
+	return &taskpb.DeleteTasksByInputResponse{}, nil
 }
 
 func toproto(t model.Task) *taskpb.Task {

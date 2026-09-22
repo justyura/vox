@@ -42,3 +42,11 @@ func (g *GRPCClient) Complete(ctx context.Context, userID, fileID uuid.UUID) (in
 	}
 	return reply.Size, nil
 }
+
+func (g *GRPCClient) Delete(ctx context.Context, userID, fileID uuid.UUID) error {
+	_, err := g.c.DeleteFile(ctx, &filepb.DeleteFileRequest{
+		UserId: userID.String(),
+		FileId: fileID.String(),
+	})
+	return err
+}

@@ -506,6 +506,94 @@ func (*UpdateStatusResponse) Descriptor() ([]byte, []int) {
 	return file_task_proto_rawDescGZIP(), []int{8}
 }
 
+type DeleteTasksByInputRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	InputFileId   string                 `protobuf:"bytes,2,opt,name=input_file_id,json=inputFileId,proto3" json:"input_file_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteTasksByInputRequest) Reset() {
+	*x = DeleteTasksByInputRequest{}
+	mi := &file_task_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTasksByInputRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTasksByInputRequest) ProtoMessage() {}
+
+func (x *DeleteTasksByInputRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_task_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTasksByInputRequest.ProtoReflect.Descriptor instead.
+func (*DeleteTasksByInputRequest) Descriptor() ([]byte, []int) {
+	return file_task_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteTasksByInputRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *DeleteTasksByInputRequest) GetInputFileId() string {
+	if x != nil {
+		return x.InputFileId
+	}
+	return ""
+}
+
+type DeleteTasksByInputResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteTasksByInputResponse) Reset() {
+	*x = DeleteTasksByInputResponse{}
+	mi := &file_task_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteTasksByInputResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteTasksByInputResponse) ProtoMessage() {}
+
+func (x *DeleteTasksByInputResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_task_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteTasksByInputResponse.ProtoReflect.Descriptor instead.
+func (*DeleteTasksByInputResponse) Descriptor() ([]byte, []int) {
+	return file_task_proto_rawDescGZIP(), []int{10}
+}
+
 var File_task_proto protoreflect.FileDescriptor
 
 const file_task_proto_rawDesc = "" +
@@ -544,13 +632,18 @@ const file_task_proto_rawDesc = "" +
 	"\x13UpdateStatusRequest\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\"\x16\n" +
-	"\x14UpdateStatusResponse2\x8b\x02\n" +
+	"\x14UpdateStatusResponse\"X\n" +
+	"\x19DeleteTasksByInputRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\"\n" +
+	"\rinput_file_id\x18\x02 \x01(\tR\vinputFileId\"\x1c\n" +
+	"\x1aDeleteTasksByInputResponse2\xe4\x02\n" +
 	"\vTaskManager\x12?\n" +
 	"\n" +
 	"CreateTask\x12\x17.task.CreateTaskRequest\x1a\x18.task.CreateTaskResponse\x12<\n" +
 	"\tListTasks\x12\x16.task.ListTasksRequest\x1a\x17.task.ListTasksResponse\x126\n" +
 	"\aGetTask\x12\x14.task.GetTaskRequest\x1a\x15.task.GetTaskResponse\x12E\n" +
-	"\fUpdateStatus\x12\x19.task.UpdateStatusRequest\x1a\x1a.task.UpdateStatusResponseB3Z1github.com/justyura/vox/03_taskService/proto;taskb\x06proto3"
+	"\fUpdateStatus\x12\x19.task.UpdateStatusRequest\x1a\x1a.task.UpdateStatusResponse\x12W\n" +
+	"\x12DeleteTasksByInput\x12\x1f.task.DeleteTasksByInputRequest\x1a .task.DeleteTasksByInputResponseB3Z1github.com/justyura/vox/03_taskService/proto;taskb\x06proto3"
 
 var (
 	file_task_proto_rawDescOnce sync.Once
@@ -564,37 +657,41 @@ func file_task_proto_rawDescGZIP() []byte {
 	return file_task_proto_rawDescData
 }
 
-var file_task_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_task_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_task_proto_goTypes = []any{
-	(*Task)(nil),                  // 0: task.Task
-	(*CreateTaskRequest)(nil),     // 1: task.CreateTaskRequest
-	(*CreateTaskResponse)(nil),    // 2: task.CreateTaskResponse
-	(*ListTasksRequest)(nil),      // 3: task.ListTasksRequest
-	(*ListTasksResponse)(nil),     // 4: task.ListTasksResponse
-	(*GetTaskRequest)(nil),        // 5: task.GetTaskRequest
-	(*GetTaskResponse)(nil),       // 6: task.GetTaskResponse
-	(*UpdateStatusRequest)(nil),   // 7: task.UpdateStatusRequest
-	(*UpdateStatusResponse)(nil),  // 8: task.UpdateStatusResponse
-	(*timestamppb.Timestamp)(nil), // 9: google.protobuf.Timestamp
+	(*Task)(nil),                       // 0: task.Task
+	(*CreateTaskRequest)(nil),          // 1: task.CreateTaskRequest
+	(*CreateTaskResponse)(nil),         // 2: task.CreateTaskResponse
+	(*ListTasksRequest)(nil),           // 3: task.ListTasksRequest
+	(*ListTasksResponse)(nil),          // 4: task.ListTasksResponse
+	(*GetTaskRequest)(nil),             // 5: task.GetTaskRequest
+	(*GetTaskResponse)(nil),            // 6: task.GetTaskResponse
+	(*UpdateStatusRequest)(nil),        // 7: task.UpdateStatusRequest
+	(*UpdateStatusResponse)(nil),       // 8: task.UpdateStatusResponse
+	(*DeleteTasksByInputRequest)(nil),  // 9: task.DeleteTasksByInputRequest
+	(*DeleteTasksByInputResponse)(nil), // 10: task.DeleteTasksByInputResponse
+	(*timestamppb.Timestamp)(nil),      // 11: google.protobuf.Timestamp
 }
 var file_task_proto_depIdxs = []int32{
-	9, // 0: task.Task.created_at:type_name -> google.protobuf.Timestamp
-	9, // 1: task.Task.finished_at:type_name -> google.protobuf.Timestamp
-	0, // 2: task.ListTasksResponse.tasks:type_name -> task.Task
-	0, // 3: task.GetTaskResponse.task:type_name -> task.Task
-	1, // 4: task.TaskManager.CreateTask:input_type -> task.CreateTaskRequest
-	3, // 5: task.TaskManager.ListTasks:input_type -> task.ListTasksRequest
-	5, // 6: task.TaskManager.GetTask:input_type -> task.GetTaskRequest
-	7, // 7: task.TaskManager.UpdateStatus:input_type -> task.UpdateStatusRequest
-	2, // 8: task.TaskManager.CreateTask:output_type -> task.CreateTaskResponse
-	4, // 9: task.TaskManager.ListTasks:output_type -> task.ListTasksResponse
-	6, // 10: task.TaskManager.GetTask:output_type -> task.GetTaskResponse
-	8, // 11: task.TaskManager.UpdateStatus:output_type -> task.UpdateStatusResponse
-	8, // [8:12] is the sub-list for method output_type
-	4, // [4:8] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	11, // 0: task.Task.created_at:type_name -> google.protobuf.Timestamp
+	11, // 1: task.Task.finished_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: task.ListTasksResponse.tasks:type_name -> task.Task
+	0,  // 3: task.GetTaskResponse.task:type_name -> task.Task
+	1,  // 4: task.TaskManager.CreateTask:input_type -> task.CreateTaskRequest
+	3,  // 5: task.TaskManager.ListTasks:input_type -> task.ListTasksRequest
+	5,  // 6: task.TaskManager.GetTask:input_type -> task.GetTaskRequest
+	7,  // 7: task.TaskManager.UpdateStatus:input_type -> task.UpdateStatusRequest
+	9,  // 8: task.TaskManager.DeleteTasksByInput:input_type -> task.DeleteTasksByInputRequest
+	2,  // 9: task.TaskManager.CreateTask:output_type -> task.CreateTaskResponse
+	4,  // 10: task.TaskManager.ListTasks:output_type -> task.ListTasksResponse
+	6,  // 11: task.TaskManager.GetTask:output_type -> task.GetTaskResponse
+	8,  // 12: task.TaskManager.UpdateStatus:output_type -> task.UpdateStatusResponse
+	10, // 13: task.TaskManager.DeleteTasksByInput:output_type -> task.DeleteTasksByInputResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_task_proto_init() }
@@ -608,7 +705,7 @@ func file_task_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_task_proto_rawDesc), len(file_task_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

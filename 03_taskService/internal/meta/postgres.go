@@ -39,7 +39,7 @@ func (p *Postgres) UpdateStatus(ctx context.Context, taskID uuid.UUID, status st
 
 func (p *Postgres) Advance(ctx context.Context, taskID uuid.UUID, stage string, outputFileID uuid.UUID) error {
 	_, err := p.conn.Exec(ctx,
-		`UPDATE tasks SET stage=$2, result_file_id=$3, status=$4 WHERE id=$1`,
+		`UPDATE tasks SET stage=$2, transcoded_file_id=result_file_id, result_file_id=$3, status=$4 WHERE id=$1`,
 		taskID, stage, outputFileID, model.StatusDispatched)
 	return err
 }
@@ -71,4 +71,29 @@ func (p *Postgres) List(ctx context.Context, userID uuid.UUID) ([]model.Task, er
 		tasks = append(tasks, t)
 	}
 	return tasks, rows.Err()
+}
+
+func (p *Postgres) ListByInput(ctx context.Context, userID, inputFileID uuid.UUID) ([]model.Task, error) {
+	rows, err := p.conn.Query(ctx,
+		`SELECT id, status, created_at, result_file_id, transcoded_file_id
+			 FROM tasks WHERE user_id=$1 AND input_file_id=$2`, userID, inputFileID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tasks := make([]model.Task, 0)
+	for rows.Next() {
+		var t model.Task
+		if err := rows.Scan(&t.TaskID, &t.Status, &t.CreatedAt, &t.OutputFileID, &t.TranscodedFileID); err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, t)
+	}
+	return tasks, rows.Err()
+}
+
+func (p *Postgres) DeleteByInput(ctx context.Context, userID, inputFileID uuid.UUID) error {
+	_, err := p.conn.Exec(ctx, `DELETE FROM tasks WHERE user_id=$1 AND input_file_id=$2`, userID, inputFileID)
+	return err
 }

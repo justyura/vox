@@ -9,6 +9,7 @@ service TaskManager {
   rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
   rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
   rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse);
+  rpc DeleteTasksByInput(DeleteTasksByInputRequest) returns (DeleteTasksByInputResponse);
 }
 
 message Task {
@@ -57,4 +58,12 @@ message UpdateStatusRequest {
 }
 
 message UpdateStatusResponse {
+}
+
+message DeleteTasksByInputRequest {
+  string user_id = 1;
+  string input_file_id = 2;
+}
+
+message DeleteTasksByInputResponse {
 }

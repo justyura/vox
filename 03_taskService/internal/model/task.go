@@ -16,14 +16,19 @@ const (
 )
 
 type Task struct {
-	TaskID       uuid.UUID
-	Type         string // what the user asked for
-	Stage        string // which step is running right now
-	Language     string
-	UserID       uuid.UUID
-	InputFileID  uuid.UUID
-	OutputFileID uuid.UUID
-	Status       string
-	CreatedAt    time.Time
-	FinishedAt   *time.Time
+	TaskID           uuid.UUID
+	Type             string // what the user asked for
+	Stage            string // which step is running right now
+	Language         string
+	UserID           uuid.UUID
+	InputFileID      uuid.UUID
+	OutputFileID     uuid.UUID
+	TranscodedFileID uuid.NullUUID
+	Status           string
+	CreatedAt        time.Time
+	FinishedAt       *time.Time
+}
+
+func (t Task) Active() bool {
+	return t.Status != StatusCompleted && t.Status != StatusFailed
 }

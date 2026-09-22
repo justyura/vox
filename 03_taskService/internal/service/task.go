@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/justyura/vox/03_taskService/internal/distributor"
@@ -92,4 +93,32 @@ func (t *TaskServer) ReportStage(ctx context.Context, jobID uuid.UUID, status st
 		return t.ds.Distribute(ctx, jobID, inputURL, outputURL, stage, task.Language)
 	}
 	return t.st.UpdateStatus(ctx, jobID, model.StatusCompleted)
+}
+
+var ErrTaskActive = errors.New("a task for this file is still running, please retry after a few minutes")
+
+func (t *TaskServer) DeleteByInput(ctx context.Context, userID, inputFileID uuid.UUID) error {
+	tasks, err := t.st.ListByInput(ctx, userID, inputFileID)
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		if task.Active() {
+			return ErrTaskActive
+		}
+	}
+
+	for _, task := range tasks {
+		if err := t.fc.Delete(ctx, userID, task.OutputFileID); err != nil {
+			return err
+		}
+
+		if task.TranscodedFileID.Valid {
+			if err := t.fc.Delete(ctx, userID, task.TranscodedFileID.UUID); err != nil {
+				return err
+			}
+		}
+	}
+	// remove the rows
+	return t.st.DeleteByInput(ctx, userID, inputFileID)
 }
