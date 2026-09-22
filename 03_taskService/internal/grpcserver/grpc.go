@@ -94,6 +94,7 @@ func toproto(t model.Task) *taskpb.Task {
 		InputFileId:  t.InputFileID.String(),
 		OutputFileId: t.OutputFileID.String(),
 		Status:       t.Status,
+		Stage:        t.Stage,
 		CreatedAt:    timestamppb.New(t.CreatedAt),
 	}
 	if t.FinishedAt != nil {

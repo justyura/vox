@@ -20,6 +20,7 @@ message Task {
   string status = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp finished_at = 8;
+  string stage = 9;
 }
 
 message CreateTaskRequest {
