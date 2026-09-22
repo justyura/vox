@@ -122,6 +122,13 @@ services:
       TASK_SERVER_ADDR: task:50052
       RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
 
+  vocab:
+    image: vox-vocab:dev
+    restart: always
+    environment:
+      DICT_PATH: /data/ecdit.csv
+    volumes:
+      - ./data/ecdict.csv:/data/ecdit.csv:ro
 
 volumes:
   userdata:
