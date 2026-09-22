@@ -41,6 +41,7 @@ func NewWorker(ts Transcriber, rp Reporter) *Worker {
 }
 
 func (w *Worker) Handle(ctx context.Context, msg TaskMessage) error {
+	w.rp.Report(ctx, msg.JobID, "processing")
 	err := w.process(ctx, msg)
 	if err != nil {
 		w.rp.Report(ctx, msg.JobID, "failed")

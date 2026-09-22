@@ -12,6 +12,7 @@ const (
 	StatusCompleted  = "completed"
 	StatusFailed     = "failed"
 	StatusRetring    = "retring"
+	StatusProcessing = "processing"
 )
 
 type Task struct {
