@@ -107,6 +107,7 @@ services:
       DATABASE_URL: postgres://vox:vox@taskdb:5432/vox?sslmode=disable
       FILE_SERVICE_ADDR: file:50051
       RABBITMQ_ADDR: amqp://vox:vox@rabbitmq:5672
+      SHORT_AUDIO_SECONDS: ${SHORT_AUDIO_SECONDS:-600}
 
   worker:
     image: vox-worker:dev
