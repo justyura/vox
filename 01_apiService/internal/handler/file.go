@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	filepb "github.com/justyura/vox/02_fileService/proto"
+	taskpb "github.com/justyura/vox/03_taskService/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -104,5 +105,38 @@ func ListFiles(client filepb.FileManagerClient) gin.HandlerFunc {
 			return
 		}
 		ctx.JSON(200, gin.H{"files": reply.Files})
+	}
+}
+
+func DeleteFile(files filepb.FileManagerClient, tasks taskpb.TaskManagerClient) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.MustGet("user_id").(string)
+		fileID := c.Param("fileid")
+
+		// tasks and their outputs first, then the file itself
+		if _, err := tasks.DeleteTasksByInput(c, &taskpb.DeleteTasksByInputRequest{
+			UserId:      userID,
+			InputFileId: fileID,
+		}); err != nil {
+			if status.Code(err) == codes.FailedPrecondition {
+				c.JSON(409, gin.H{"error": "这个文件还有任务在处理，完成后再删除"})
+				return
+			}
+			c.JSON(500, gin.H{"error": "delete tasks failed"})
+			return
+		}
+
+		if _, err := files.DeleteFile(c, &filepb.DeleteFileRequest{
+			UserId: userID,
+			FileId: fileID,
+		}); err != nil {
+			if status.Code(err) == codes.NotFound {
+				c.JSON(404, gin.H{"error": "file not found"})
+				return
+			}
+			c.JSON(500, gin.H{"error": "delete file failed"})
+			return
+		}
+		c.Status(204)
 	}
 }

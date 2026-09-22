@@ -65,6 +65,7 @@ func main() {
 		authorized.GET("/whoami", handler.Whoami())
 		authorized.POST("/upload", handler.Upload(fileClient))
 		authorized.POST("/files/:fileid/complete", handler.CompleteUpload(fileClient))
+		authorized.DELETE("/files/:fileid", handler.DeleteFile(fileClient, taskClient))
 		authorized.GET("/download/:fileid", handler.Download(fileClient))
 		authorized.GET("/listfiles", handler.ListFiles(fileClient))
 		authorized.POST("/tasks", handler.CreateTask(taskClient))
