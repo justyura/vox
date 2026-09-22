@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v7.34.0
-// source: 02_fileService/proto/file.proto
+// source: file.proto
 
 package file
 
@@ -23,6 +23,7 @@ const (
 	FileManager_Download_FullMethodName       = "/file.FileManager/Download"
 	FileManager_ListFiles_FullMethodName      = "/file.FileManager/ListFiles"
 	FileManager_CompleteUpload_FullMethodName = "/file.FileManager/CompleteUpload"
+	FileManager_DeleteFile_FullMethodName     = "/file.FileManager/DeleteFile"
 )
 
 // FileManagerClient is the client API for FileManager service.
@@ -33,6 +34,7 @@ type FileManagerClient interface {
 	Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadReply, error)
 	ListFiles(ctx context.Context, in *ListFilesRequest, opts ...grpc.CallOption) (*ListFilesReply, error)
 	CompleteUpload(ctx context.Context, in *CompleteUploadRequest, opts ...grpc.CallOption) (*CompleteUploadReply, error)
+	DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileReply, error)
 }
 
 type fileManagerClient struct {
@@ -83,6 +85,16 @@ func (c *fileManagerClient) CompleteUpload(ctx context.Context, in *CompleteUplo
 	return out, nil
 }
 
+func (c *fileManagerClient) DeleteFile(ctx context.Context, in *DeleteFileRequest, opts ...grpc.CallOption) (*DeleteFileReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteFileReply)
+	err := c.cc.Invoke(ctx, FileManager_DeleteFile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FileManagerServer is the server API for FileManager service.
 // All implementations must embed UnimplementedFileManagerServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type FileManagerServer interface {
 	Download(context.Context, *DownloadRequest) (*DownloadReply, error)
 	ListFiles(context.Context, *ListFilesRequest) (*ListFilesReply, error)
 	CompleteUpload(context.Context, *CompleteUploadRequest) (*CompleteUploadReply, error)
+	DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileReply, error)
 	mustEmbedUnimplementedFileManagerServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedFileManagerServer) ListFiles(context.Context, *ListFilesReque
 }
 func (UnimplementedFileManagerServer) CompleteUpload(context.Context, *CompleteUploadRequest) (*CompleteUploadReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method CompleteUpload not implemented")
+}
+func (UnimplementedFileManagerServer) DeleteFile(context.Context, *DeleteFileRequest) (*DeleteFileReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteFile not implemented")
 }
 func (UnimplementedFileManagerServer) mustEmbedUnimplementedFileManagerServer() {}
 func (UnimplementedFileManagerServer) testEmbeddedByValue()                     {}
@@ -206,6 +222,24 @@ func _FileManager_CompleteUpload_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FileManager_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FileManagerServer).DeleteFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FileManager_DeleteFile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FileManagerServer).DeleteFile(ctx, req.(*DeleteFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FileManager_ServiceDesc is the grpc.ServiceDesc for FileManager service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -229,7 +263,11 @@ var FileManager_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "CompleteUpload",
 			Handler:    _FileManager_CompleteUpload_Handler,
 		},
+		{
+			MethodName: "DeleteFile",
+			Handler:    _FileManager_DeleteFile_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "02_fileService/proto/file.proto",
+	Metadata: "file.proto",
 }

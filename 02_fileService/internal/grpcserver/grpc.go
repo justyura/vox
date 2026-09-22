@@ -105,3 +105,21 @@ func (gs *GRPCServer) ListFiles(ctx context.Context, req *filepb.ListFilesReques
 	}
 	return reply, nil
 }
+
+func (gs *GRPCServer) DeleteFile(ctx context.Context, req *filepb.DeleteFileRequest) (*filepb.DeleteFileReply, error) {
+	fileid, err := uuid.Parse(req.FileId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid file_id")
+	}
+	userid, err := uuid.Parse(req.UserId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid user_id")
+	}
+	if err := gs.fs.Delete(ctx, userid, fileid); err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "file not found")
+		}
+		return nil, status.Error(codes.Internal, "delete file failed")
+	}
+	return &filepb.DeleteFileReply{}, nil
+}

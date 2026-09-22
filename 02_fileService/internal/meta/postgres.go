@@ -59,3 +59,8 @@ func (p *Postgres) Get(ctx context.Context, fileID uuid.UUID) (model.File, error
 
 	return f, err
 }
+
+func (p *Postgres) Delete(ctx context.Context, fileID uuid.UUID) error {
+	_, err := p.conn.Exec(ctx, "DELETE FROM files WHERE file_id = $1", fileID)
+	return err
+}

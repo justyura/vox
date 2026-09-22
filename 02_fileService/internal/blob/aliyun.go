@@ -72,3 +72,11 @@ func (ac *AliyunClient) Stat(ctx context.Context, fileID string) (int64, error) 
 	}
 	return res.ContentLength, nil
 }
+
+func (ac *AliyunClient) Delete(ctx context.Context, fileID string) error {
+	_, err := ac.api.DeleteObject(ctx, &oss.DeleteObjectRequest{
+		Bucket: oss.Ptr(ac.bucket),
+		Key:    oss.Ptr(fileID),
+	})
+	return err
+}

@@ -55,3 +55,7 @@ func (mc *MinioClient) Stat(ctx context.Context, fileID string) (int64, error) {
 	}
 	return info.Size, nil
 }
+
+func (mc *MinioClient) Delete(ctx context.Context, fileID string) error {
+	return mc.api.RemoveObject(ctx, "vox", fileID, minio.RemoveObjectOptions{})
+}

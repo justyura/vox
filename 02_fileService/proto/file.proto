@@ -8,6 +8,7 @@ service FileManager {
   rpc Download(DownloadRequest) returns (DownloadReply) {}
   rpc ListFiles(ListFilesRequest) returns (ListFilesReply) {}
   rpc CompleteUpload(CompleteUploadRequest) returns (CompleteUploadReply) {}
+  rpc DeleteFile(DeleteFileRequest) returns (DeleteFileReply) {}
 }
 
 message UploadRequest {
@@ -54,3 +55,10 @@ message FileInfo {
   string status = 5;
   string created_at = 6;
 }
+
+message DeleteFileRequest {
+  string file_id = 1;
+  string user_id = 2;
+}
+
+message DeleteFileReply {}

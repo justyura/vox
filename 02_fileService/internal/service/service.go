@@ -80,3 +80,18 @@ func (fs *FileServer) Download(ctx context.Context, user, fileid uuid.UUID) (str
 	}
 	return fs.oss.Download(ctx, fileid.String())
 }
+
+func (fs *FileServer) Delete(ctx context.Context, user, fileid uuid.UUID) error {
+	f, err := fs.store.Get(ctx, fileid)
+	if err != nil {
+		return err
+	}
+	if !f.CanAccess(user) {
+		return model.ErrNotFound
+	}
+	// object first: if deleting the record then fails, a retry still finds it and finishes the job
+	if err := fs.oss.Delete(ctx, fileid.String()); err != nil {
+		return fmt.Errorf("delete object: %w", err)
+	}
+	return fs.store.Delete(ctx, fileid)
+}
