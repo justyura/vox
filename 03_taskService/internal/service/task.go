@@ -11,13 +11,14 @@ import (
 )
 
 type TaskServer struct {
-	st meta.Store
-	fc client.FileClient
-	ds distributor.Distributor
+	st        meta.Store
+	fc        client.FileClient
+	ds        distributor.Distributor
+	threshold int64 // <= threshold → transcribe-short, else transcribe-long
 }
 
-func NewTaskServer(st meta.Store, fc client.FileClient, ds distributor.Distributor) *TaskServer {
-	return &TaskServer{st: st, fc: fc, ds: ds}
+func NewTaskServer(st meta.Store, fc client.FileClient, ds distributor.Distributor, threshold int64) *TaskServer {
+	return &TaskServer{st: st, fc: fc, ds: ds, threshold: threshold}
 }
 
 func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UUID, taskType string, language string) (uuid.UUID, error) {
@@ -71,20 +72,24 @@ func (t *TaskServer) ReportStage(ctx context.Context, jobID uuid.UUID, status st
 		return err
 	}
 
-	_, err = t.fc.Complete(ctx, task.UserID, task.OutputFileID)
+	size, err := t.fc.Complete(ctx, task.UserID, task.OutputFileID)
 	if err != nil {
 		return err
 	}
 
 	if task.Stage == "transcode" {
+		stage := "transcribe-long"
+		if size/32000 <= t.threshold {
+			stage = "transcribe-short"
+		}
 		inputURL, outputURL, outputFileID, err := t.fc.Request(ctx, task.UserID, task.OutputFileID, "result-"+jobID.String()+"-transcribe")
 		if err != nil {
 			return err
 		}
-		if err := t.st.Advance(ctx, jobID, "transcribe", outputFileID); err != nil {
+		if err := t.st.Advance(ctx, jobID, stage, outputFileID); err != nil {
 			return err
 		}
-		return t.ds.Distribute(ctx, jobID, inputURL, outputURL, "transcribe", task.Language)
+		return t.ds.Distribute(ctx, jobID, inputURL, outputURL, stage, task.Language)
 	}
 	return t.st.UpdateStatus(ctx, jobID, model.StatusCompleted)
 }

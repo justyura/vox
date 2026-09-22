@@ -36,7 +36,7 @@ func loadconfig() (config, error) {
 	}
 	// Same queue as the whisper worker until short/long routing exists.
 	if cfg.queue == "" {
-		cfg.queue = "transcribe"
+		cfg.queue = "transcribe-short"
 	}
 
 	switch {

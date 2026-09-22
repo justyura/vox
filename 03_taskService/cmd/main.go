@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
@@ -69,7 +70,12 @@ func main() {
 	}
 
 	// prepare task server DI
-	ts := service.NewTaskServer(pg, fc, ds)
+	// audio shorter than this (seconds) goes to the cloud transcriber
+	threshold, err := strconv.ParseInt(os.Getenv("SHORT_AUDIO_SECONDS"), 10, 64)
+	if err != nil {
+		threshold = 600
+	}
+	ts := service.NewTaskServer(pg, fc, ds, threshold)
 
 	// run the gRPC server
 	lis, err := net.Listen("tcp", ":50052")

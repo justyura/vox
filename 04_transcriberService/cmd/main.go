@@ -92,7 +92,7 @@ func consume(addr string, w *worker.Worker) error {
 	if err := ch.Qos(1, 0, false); err != nil {
 		return err
 	}
-	msgs, err := ch.Consume("transcribe", "", false, false, false, false, nil)
+	msgs, err := ch.Consume("transcribe-long", "", false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
