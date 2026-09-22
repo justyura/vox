@@ -71,7 +71,8 @@ func (t *TaskServer) ReportStage(ctx context.Context, jobID uuid.UUID, status st
 		return err
 	}
 
-	if err := t.fc.Complete(ctx, task.UserID, task.OutputFileID); err != nil {
+	_, err = t.fc.Complete(ctx, task.UserID, task.OutputFileID)
+	if err != nil {
 		return err
 	}
 
