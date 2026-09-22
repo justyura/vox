@@ -3,343 +3,260 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#101a19" />
-    <meta
-      name="description"
-      content="Vox 语音工作台：管理全部任务、源文件与转写结果。"
-    />
-    <title>Vox · 语音工作台</title>
+    <meta name="description" content="Vox：把音频和视频变成可以阅读、跳转和学习的文字。" />
+    <title>Vox</title>
     <link rel="stylesheet" href="/styles.css" />
     <script src="/app.js" defer></script>
   </head>
   <body>
-    <aside class="sidebar">
-      <a class="brand" href="#tasks"
-        ><span class="brand-icon" aria-hidden="true">▥</span> vox<span
-          class="brand-dot"
-          >.</span
-        ></a
-      >
-      <span class="nav-caption">工作空间</span>
-      <nav aria-label="主导航">
-        <a href="#tasks" data-view="tasks"
-          ><span aria-hidden="true">▤</span> 全部任务
-          <span id="nav-tasks" class="nav-count">—</span></a
-        >
-        <a href="#files" data-view="files"
-          ><span aria-hidden="true">▱</span> 文件库
-          <span id="nav-files" class="nav-count">—</span></a
-        >
-        <a href="#create" data-view="create"
-          ><span aria-hidden="true">＋</span> 新建转写</a
-        >
-      </nav>
-      <div class="sidebar-foot">
-        <span class="live-dot"></span> 你的声音，有迹可循。<small
-          >VOX / SPEECH WORKSPACE</small
-        >
-      </div>
-    </aside>
-    <div class="shell">
-      <header class="topbar">
-        <span
-          >工作空间 <span class="slash">/</span>
-          <strong id="breadcrumb">全部任务</strong></span
-        >
-        <div class="account">
-          <span id="account">尚未登录</span
-          ><button id="logout" class="quiet" hidden>退出登录</button>
-        </div>
-      </header>
+    <!-- sign in -->
+    <section id="auth" class="auth" hidden>
+      <form id="auth-form">
+        <div class="brand"><i aria-hidden="true"><b style="height: 40%"></b><b style="height: 100%"></b><b style="height: 65%"></b><b style="height: 85%"></b></i>Vox</div>
+        <h1 id="auth-title">登录</h1>
+        <label>邮箱<input name="email" type="email" autocomplete="email" required /></label>
+        <label>密码<input name="password" type="password" autocomplete="current-password" required /></label>
+        <button id="auth-submit" class="primary" type="submit">登录</button>
+        <p id="auth-msg" class="msg" role="status"></p>
+        <p class="switch"><span id="auth-switch-text">还没有账号？</span> <button type="button" id="auth-switch">注册</button></p>
+      </form>
+    </section>
+
+    <div id="app" class="app" hidden>
+      <aside class="side">
+        <a class="brand" href="#/"><i aria-hidden="true"><b style="height: 40%"></b><b style="height: 100%"></b><b style="height: 65%"></b><b style="height: 85%"></b></i>Vox</a>
+        <nav class="nav" aria-label="主导航">
+          <a href="#/" data-nav="home">转写 <span class="count" id="count-tasks"></span></a>
+          <a href="#/files" data-nav="files">文件库 <span class="count" id="count-files"></span></a>
+          <a href="#/about" data-nav="about">关于</a>
+          <a href="#/faq" data-nav="faq">问答</a>
+        </nav>
+        <div class="who"><span id="account"></span><br /><button id="logout">退出登录</button></div>
+      </aside>
+
       <main>
-        <section id="auth" class="auth-panel">
-          <div>
-            <span class="eyebrow">WELCOME TO VOX</span>
-            <h1>每一段声音，<br />都有清晰的下文。</h1>
-            <p class="muted">
-              登录你的工作空间，查看完整任务记录、管理文件，<br />让音频和视频成为可阅读的文字。
-            </p>
-            <div class="auth-decoration" aria-hidden="true">
-              ▂ ▄ ▆ █ ▅ ▃ ▇ ▆ ▄ ▂ ▅ █ ▆ ▃ ▂
+        <!-- home: upload + transcriptions -->
+        <section id="view-home" hidden>
+          <h1>你的转写</h1>
+          <p class="sub">把音频或视频放进来，剩下的交给 Vox。</p>
+          <div class="drop" id="drop">
+            <div class="big">拖入音频或视频</div>
+            <div class="hint">放下就开始转写 · mp3 / m4a / wav / mp4 / mov / mkv 都可以</div>
+            <div class="row" id="pick-row">
+              <button class="primary" id="pick">选择文件</button>
+              <button id="rec-start">● 录音</button>
             </div>
+            <div class="rec" id="rec" hidden>
+              <span class="dot" aria-hidden="true"></span>
+              <span id="rec-time">00:00</span>
+              <button class="primary" id="rec-stop">停止并转写</button>
+              <button class="ghost" id="rec-cancel">放弃</button>
+            </div>
+            <label class="lang" for="language">语言：<select id="language">
+                <option value="auto">自动识别</option>
+                <option value="zh">中文</option>
+                <option value="en">English</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="es">Español</option>
+              </select></label>
+            <p class="msg" id="upload-msg" role="status"></p>
+            <input id="file-input" type="file" accept="audio/*,video/*" hidden />
           </div>
-          <form id="auth-form" class="card">
-            <div class="switcher">
-              <button
-                type="button"
-                id="login-mode"
-                class="active"
-                aria-pressed="true"
-              >
-                登录</button
-              ><button type="button" id="signup-mode" aria-pressed="false">
-                注册
-              </button>
-            </div>
-            <h2 id="auth-title">登录工作空间</h2>
-            <label
-              >邮箱<input
-                name="email"
-                type="email"
-                autocomplete="email"
-                placeholder="you@example.com"
-                required /></label
-            ><label
-              >密码<input
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                required /></label
-            ><button id="auth-submit" class="primary" type="submit">
-              登录
-            </button>
-            <p id="auth-message" class="message" role="status"></p>
-          </form>
+          <div class="list" id="task-list"></div>
+          <p class="note">进度条四段对应处理流程：上传 → 转码 → 转写 → 完成。斜纹表示在队列里等待，流动的绿色表示正在处理。</p>
         </section>
-        <div id="workspace" hidden>
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">SPEECH WORKSPACE</span>
-              <h1 id="page-title">全部任务</h1>
-              <p id="page-description" class="muted">
-                从上传到完成，查看每一次转写的来龙去脉。
-              </p>
-            </div>
-            <div class="heading-actions">
-              <button id="record-entry" type="button">🎙 录音转写</button
-              ><a class="button primary" href="#create">＋ 新建转写</a>
+
+        <!-- file library: source media only -->
+        <section id="view-files" hidden>
+          <h1>文件库</h1>
+          <p class="sub">你上传过的原始音视频。转码中间产物和结果文件不在这里显示。</p>
+          <div class="list" id="file-list"></div>
+        </section>
+
+        <!-- reader -->
+        <section id="view-read" hidden>
+          <div class="rhead">
+            <a href="#/" class="ghost" id="read-back">← 返回</a>
+            <h1 id="read-title"></h1>
+            <div class="menu">
+              <button id="more" aria-haspopup="menu" aria-expanded="false">⋯ 更多</button>
+              <div class="menu-pop" id="menu" role="menu" hidden>
+                <button role="menuitem" data-menu="srt">下载字幕（SRT）</button>
+                <button role="menuitem" data-menu="txt">下载文本</button>
+                <button role="menuitem" data-menu="copy">复制全文</button>
+                <button role="menuitem" data-menu="source">打开原始文件</button>
+                <hr />
+                <button role="menuitem" data-menu="tech">技术信息</button>
+              </div>
             </div>
           </div>
-          <section class="stats" aria-label="工作空间统计">
+          <div class="reader">
             <div>
-              <span>全部任务</span><strong id="stat-tasks">—</strong
-              ><small>当前账户的完整记录</small>
-            </div>
-            <div>
-              <span>处理中</span><strong id="stat-active">—</strong
-              ><small>等待调度或正在处理</small>
-            </div>
-            <div>
-              <span>已完成</span><strong id="stat-completed">—</strong
-              ><small>可查看转写结果</small>
-            </div>
-            <div>
-              <span>文件库</span><strong id="stat-files">—</strong
-              ><small id="stat-size">源文件与处理产物</small>
-            </div>
-          </section>
-          <section id="list-view" class="card list-card">
-            <div class="list-heading">
-              <div>
-                <h2 id="list-title">任务记录</h2>
-                <span id="sync-status" class="muted" role="status"
-                  >等待同步</span
-                >
-              </div>
-              <div class="row-actions">
-                <label class="checkbox"
-                  ><input id="auto-refresh" type="checkbox" checked />
-                  自动刷新</label
-                ><button id="refresh">↻ 刷新</button>
+              <div id="stage-slot"></div>
+              <div class="tscript-wrap">
+                <div class="tscript" id="tscript" tabindex="0" aria-label="转写正文"></div>
+                <button class="backnow" id="backnow" hidden>回到当前</button>
               </div>
             </div>
-            <div class="filters">
-              <label class="search"
-                ><span class="sr-only">搜索名称或 ID</span
-                ><input
-                  id="search"
-                  type="search"
-                  placeholder="搜索文件名、任务 ID 或文件 ID…" /></label
-              ><label
-                ><span class="sr-only">状态筛选</span
-                ><select id="status-filter">
-                  <option value="">全部状态</option>
-                </select></label
-              ><label
-                ><span class="sr-only">分类筛选</span
-                ><select id="kind-filter">
-                  <option value="">全部类型</option>
-                </select></label
-              ><label
-                ><span class="sr-only">排序</span
-                ><select id="sort">
-                  <option value="newest">最新创建</option>
-                  <option value="oldest">最早创建</option>
-                </select></label
-              >
-            </div>
-            <div id="list-error" class="error-banner" role="alert" hidden></div>
-            <div class="table-scroll">
-              <table>
-                <thead id="table-head"></thead>
-                <tbody id="table-body"></tbody>
-              </table>
-            </div>
-            <div id="empty" class="empty" hidden>
-              <span aria-hidden="true">◎</span>
-              <h3 id="empty-title">还没有任务</h3>
-              <p id="empty-description">上传一段音频或视频，开始第一次转写。</p>
-            </div>
-            <footer class="pagination">
-              <span id="list-count">—</span>
-              <div>
-                <label
-                  >每页
-                  <select id="page-size">
-                    <option>20</option>
-                    <option>50</option>
-                    <option>100</option>
-                  </select>
-                  条</label
-                ><button id="previous" aria-label="上一页">←</button
-                ><span id="page-number">1 / 1</span
-                ><button id="next" aria-label="下一页">→</button>
-              </div>
-            </footer>
-          </section>
-          <section id="create-view" hidden>
-            <div class="create-grid">
-              <form id="create-form" class="card">
-                <h2>新建转写</h2>
-                <p class="muted">
-                  上传音视频、直接录音，或使用文件库中的现有文件。
-                </p>
-                <div>
-                  <span id="source-label" class="source-label">文件来源</span>
-                  <input id="source" type="hidden" value="upload" />
-                  <div
-                    class="source-options"
-                    role="group"
-                    aria-labelledby="source-label"
-                  >
-                    <button
-                      type="button"
-                      data-source="upload"
-                      aria-pressed="true"
-                      class="is-active"
-                    >
-                      上传文件
-                    </button>
-                    <button
-                      type="button"
-                      data-source="record"
-                      aria-pressed="false"
-                    >
-                      🎙 麦克风录音
-                    </button>
-                    <button
-                      type="button"
-                      data-source="existing"
-                      aria-pressed="false"
-                    >
-                      已有文件
-                    </button>
-                  </div>
-                </div>
-                <div id="upload-fields">
-                  <label id="drop-zone" class="drop-zone">
-                    <span class="upload-icon" aria-hidden="true">↑</span
-                    ><strong>选择文件，或将文件拖到这里</strong
-                    ><span class="muted">支持音频与视频</span
-                    ><input
-                      id="file-input"
-                      type="file"
-                      accept="audio/*,video/*"
-                  /></label>
-                  <p id="selected-file" class="muted">未选择文件</p>
-                </div>
-                <section
-                  id="record-fields"
-                  class="record-panel"
-                  hidden
-                  aria-label="麦克风录音"
-                >
-                  <div class="record-heading">
-                    <strong id="record-label">准备录音</strong
-                    ><span id="record-time" class="mono" aria-label="录音时长"
-                      >00:00</span
-                    >
-                  </div>
-                  <p class="muted">停止后可先试听，确认后再提交转写。</p>
-                  <div class="record-actions">
-                    <button id="record-start" type="button">● 开始录音</button
-                    ><button id="record-stop" type="button" disabled>
-                      停止录音</button
-                    ><button id="record-clear" type="button" hidden>
-                      删除录音
-                    </button>
-                  </div>
-                  <audio
-                    id="record-preview"
-                    controls
-                    preload="metadata"
-                    hidden
-                    aria-label="录音试听"
-                  ></audio>
-                  <p id="record-message" class="message" role="status">
-                    录音仅保存在当前页面，提交后才会上传。请在 HTTPS 或
-                    localhost 下使用麦克风。
-                  </p>
-                </section>
-                <label id="existing-fields" hidden
-                  >已有文件<select id="existing-file">
-                    <option value="">请选择文件</option>
-                  </select></label
-                ><label
-                  >转写语言<select id="language">
-                    <option value="auto">自动识别</option>
-                    <option value="zh">中文</option>
-                    <option value="en">英语</option>
-                    <option value="ja">日语</option>
-                    <option value="ko">韩语</option>
-                    <option value="fr">法语</option>
-                    <option value="de">德语</option>
-                    <option value="es">西班牙语</option>
-                    <option value="ru">俄语</option>
-                  </select></label
-                ><button id="create-submit" class="primary" type="submit">
-                  创建转写任务 →
-                </button>
-                <p id="create-message" class="message" role="status"></p>
-              </form>
-              <aside class="card guide">
-                <span class="eyebrow">HOW IT WORKS</span>
-                <h2>上传之后，交给 Vox。</h2>
-                <ol>
-                  <li>
-                    <strong>上传文件</strong>
-                    <p>文件直接上传至对象存储，完成后校验。</p>
-                  </li>
-                  <li>
-                    <strong>提交转写</strong>
-                    <p>任务在后台异步处理，可以离开页面，稍后继续查看。</p>
-                  </li>
-                  <li>
-                    <strong>查看与下载</strong>
-                    <p>在任务详情中阅读结果，在文件库中访问原文件与产物。</p>
-                  </li>
-                </ol>
-                <p class="note">
-                  列表显示当前登录账户可访问的全部记录。刷新失败时会保留上次成功加载的数据。
-                </p>
-              </aside>
-            </div>
-          </section>
-        </div>
-        <footer class="page-footer">
-          <span>VOX</span><span>把声音变成文字，把过程留在眼前。</span>
-        </footer>
+            <aside class="words" id="words">
+              <h2>生词 <span id="words-count"></span></h2>
+              <p class="hint">按出现次数排序；当前这句里的词会高亮。</p>
+              <ul id="words-list"></ul>
+            </aside>
+          </div>
+        </section>
+
+        <!-- about -->
+        <section id="view-about" class="prose" hidden>
+          <h1>关于 Vox</h1>
+          <p class="lede">Vox 把一段音频或视频变成可以阅读、可以跳转、可以学习的文字：上传之后自动转码和转写，按句子对齐时间戳，再把文中的生词标出来。</p>
+          <h2>系统架构</h2>
+          <figure class="arch">
+            <svg viewBox="0 0 960 520" role="img" aria-label="Vox 架构：浏览器经 nginx 访问 API 网关和生词服务；网关通过 gRPC 调用文件服务和任务服务；任务服务把任务派发到 RabbitMQ，再由转码 worker、云端转写 worker 和 Mac 上的本地转写 worker 消费；文件字节不经过后端服务，浏览器和 worker 直接读写对象存储。">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--green)"/></marker>
+          </defs>
+
+                    <rect x="172" y="34" width="772" height="356" rx="14" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-dasharray="5 5"/>
+          <text x="186" y="54" font-size="12" fill="currentColor" fill-opacity=".6">德国服务器 de · Docker Compose</text>
+          <rect x="740" y="404" width="204" height="100" rx="14" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-dasharray="5 5"/>
+          <text x="754" y="424" font-size="12" fill="currentColor" fill-opacity=".6">你的 Mac · Metal GPU</text>
+
+                    <path d="M70,226 V16 H825 V58" fill="none" style="stroke:var(--green)" stroke-width="2.5" marker-end="url(#arg)"/>
+          <text x="440" y="12" font-size="12" text-anchor="middle" style="fill:var(--green)">浏览器直传 / 播放文件（预签名 URL）</text>
+          <path d="M890,82 H918 V452 H892 M918,252 H892 M918,342 H892" fill="none" style="stroke:var(--green)" stroke-width="2.5"/>
+          <text x="934" y="270" font-size="12" text-anchor="middle" style="fill:var(--green)" transform="rotate(90 934 270)">worker 读写文件</text>
+
+                    <g stroke="currentColor" stroke-opacity=".55" stroke-width="1.4" fill="none">
+            <line x1="130" y1="248" x2="183" y2="248" marker-end="url(#ar)"/>
+            <line x1="315" y1="240" x2="358" y2="180" marker-end="url(#ar)"/>
+            <line x1="315" y1="258" x2="358" y2="338" marker-end="url(#ar)"/>
+            <line x1="490" y1="162" x2="538" y2="96" marker-end="url(#ar)"/>
+            <line x1="490" y1="180" x2="538" y2="214" marker-end="url(#ar)"/>
+            <line x1="605" y1="198" x2="605" y2="108" marker-end="url(#ar)"/>
+            <line x1="605" y1="246" x2="605" y2="326" marker-end="url(#ar)"/>
+            <line x1="670" y1="82" x2="758" y2="82" marker-end="url(#ar)"/>
+            <line x1="670" y1="342" x2="758" y2="256" marker-end="url(#ar)"/>
+            <line x1="670" y1="352" x2="758" y2="344" marker-end="url(#ar)"/>
+            <line x1="670" y1="362" x2="758" y2="448" marker-end="url(#ar)"/>
+          </g>
+          <g font-size="11" fill="currentColor" fill-opacity=".7">
+            <text x="156" y="241" text-anchor="middle">HTTP</text>
+            <text x="318" y="200">/api/</text>
+            <text x="318" y="312">/vocab/</text>
+            <text x="498" y="120">gRPC</text>
+            <text x="498" y="212">gRPC</text>
+            <text x="612" y="158">申请签名 URL</text>
+            <text x="612" y="292">派发任务</text>
+            <text x="714" y="74" text-anchor="middle">签名</text>
+            <text x="700" y="290">transcode</text>
+            <text x="686" y="340">transcribe-short</text>
+            <text x="690" y="420">transcribe-long · 经 SSH 隧道</text>
+          </g>
+
+                    <g font-size="13" fill="currentColor">
+            <rect x="10" y="226" width="120" height="44" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+            <text x="70" y="253" text-anchor="middle" font-weight="600">浏览器</text>
+            <g>
+              <rect x="185" y="226" width="130" height="44" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="250" y="246" text-anchor="middle" font-weight="600">web · nginx</text>
+              <text x="250" y="259" text-anchor="middle" font-size="11" fill-opacity=".6">静态页面 + 反向代理</text>
+            </g>
+            <g>
+              <rect x="360" y="148" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="425" y="168" text-anchor="middle" font-weight="600">01 API 网关</text>
+              <text x="425" y="185" text-anchor="middle" font-size="11" fill-opacity=".6">Gin · JWT · userdb</text>
+            </g>
+            <g>
+              <rect x="360" y="326" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="425" y="346" text-anchor="middle" font-weight="600">05 生词服务</text>
+              <text x="425" y="363" text-anchor="middle" font-size="11" fill-opacity=".6">HTTP · ECDICT · 无状态</text>
+            </g>
+            <g>
+              <rect x="540" y="60" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="605" y="80" text-anchor="middle" font-weight="600">02 文件服务</text>
+              <text x="605" y="97" text-anchor="middle" font-size="11" fill-opacity=".6">gRPC · filedb</text>
+            </g>
+            <g>
+              <rect x="540" y="198" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="605" y="218" text-anchor="middle" font-weight="600">03 任务服务</text>
+              <text x="605" y="235" text-anchor="middle" font-size="11" fill-opacity=".6">gRPC · taskdb · 编排</text>
+            </g>
+            <g>
+              <rect x="540" y="326" width="130" height="48" rx="8" style="fill:var(--pale)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="605" y="346" text-anchor="middle" font-weight="600">RabbitMQ</text>
+              <text x="605" y="363" text-anchor="middle" font-size="11" fill-opacity=".6">exchange vox.tasks</text>
+            </g>
+            <g>
+              <rect x="760" y="58" width="130" height="48" rx="8" style="fill:var(--surface);stroke:var(--green)"/>
+              <text x="825" y="78" text-anchor="middle" font-weight="600">MinIO</text>
+              <text x="825" y="95" text-anchor="middle" font-size="11" fill-opacity=".6">对象存储 · 150G</text>
+            </g>
+            <g>
+              <rect x="760" y="230" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="825" y="250" text-anchor="middle" font-weight="600">06 转码 worker</text>
+              <text x="825" y="267" text-anchor="middle" font-size="11" fill-opacity=".6">ffmpeg → 16kHz WAV</text>
+            </g>
+            <g>
+              <rect x="760" y="320" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="825" y="340" text-anchor="middle" font-weight="600">04 云端转写</text>
+              <text x="825" y="357" text-anchor="middle" font-size="11" fill-opacity=".6">→ ElevenLabs API</text>
+            </g>
+            <g>
+              <rect x="760" y="430" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
+              <text x="825" y="450" text-anchor="middle" font-weight="600">04 本地转写</text>
+              <text x="825" y="467" text-anchor="middle" font-size="11" fill-opacity=".6">whisper.cpp · large-v3</text>
+            </g>
+          </g>
+
+                    <g font-size="11" fill="currentColor" fill-opacity=".7">
+            <line x1="20" y1="470" x2="50" y2="470" style="stroke:var(--green)" stroke-width="2.5"/><text x="58" y="474">文件字节（数据面）</text>
+            <line x1="20" y1="492" x2="50" y2="492" stroke="currentColor" stroke-opacity=".55" stroke-width="1.4"/><text x="58" y="496">请求与任务消息（控制面）</text>
+          </g>
+        </svg>
+            <figcaption>后端服务只传元数据，文件本身不经过它们：02 签发有时效的 URL，浏览器和 worker 直接读写对象存储。慢任务经 RabbitMQ 分到不同机器：10 分钟内的音频交给云端 ElevenLabs，更长的交给 Mac 上的本地模型。worker 通过 gRPC 向 03 汇报状态（图中省略）。源码见 <a href="https://github.com/justyura/vox" target="_blank" rel="noopener">GitHub</a>。</figcaption>
+          </figure>
+          <h2>用到的技术</h2>
+          <div class="stackgrid">
+            <div><h3>服务</h3><ul class="stack"><li>Go</li><li>Gin</li><li>gRPC</li><li>Protocol Buffers</li><li>net/http</li></ul><p>对外 HTTP + JSON，服务之间 gRPC。</p></div>
+            <div><h3>数据与存储</h3><ul class="stack"><li>PostgreSQL</li><li>pgx 连接池</li><li>goose 迁移</li><li>MinIO</li><li>阿里云 OSS</li></ul><p>每个服务一个库；存储走 S3 兼容接口，预签名 URL 直传。</p></div>
+            <div><h3>异步任务</h3><ul class="stack"><li>RabbitMQ</li><li>direct 交换机</li><li>手动 ack</li><li>prefetch 1</li><li>竞争消费者</li></ul><p>按阶段路由：转码、短转写、长转写各一条队列。</p></div>
+            <div><h3>媒体与语音</h3><ul class="stack"><li>ffmpeg</li><li>whisper.cpp</li><li>cgo</li><li>Metal</li><li>ElevenLabs Scribe v2</li><li>ECDICT</li></ul><p>同一个 Transcriber 接口，本地和云端两种实现。</p></div>
+            <div><h3>前端与入口</h3><ul class="stack"><li>原生 JavaScript</li><li>nginx 反向代理</li><li>JWT 认证</li></ul><p>无框架、无构建；同源代理，不需要 CORS。</p></div>
+            <div><h3>部署与伸缩</h3><ul class="stack"><li>Docker</li><li>Docker Compose</li><li>Kubernetes</li><li>KEDA</li><li>SSH 隧道</li></ul><p>KEDA 按队列长度自动扩缩 worker；内部端口只绑本机。</p></div>
+          </div>
+        </section>
+
+        <!-- faq -->
+        <section id="view-faq" class="prose faq" hidden>
+          <h1>常见问题</h1>
+          <p class="sub">使用上的问题在前，技术选择在后。</p>
+          <h2>使用</h2>
+          <details open><summary>支持哪些文件？</summary><p>常见的音频和视频都可以：mp3、m4a、wav、mp4、mov、mkv、webm 等。上传后会先统一转成 16kHz 单声道 WAV，再交给转写引擎。</p></details>
+          <details><summary>要等多久？</summary><p>10 分钟以内的音频交给云端 ElevenLabs，通常几秒到几十秒就能出结果。更长的交给本地 whisper 模型，需要排队，可能要几分钟；列表里的进度条会告诉你它在排队还是在处理。</p></details>
+          <details><summary>支持哪些语言？</summary><p>默认自动识别。也可以在上传区下方手动指定中文、英文、日语等，指定后识别会更准。</p></details>
+          <details><summary>为什么有的视频在网页里放不了？</summary><p>浏览器只认识 MP4 + H.264 + AAC 这类格式。MKV 容器或 E-AC3 音轨在浏览器里放不了，但转写不受影响，文字和生词照常生成。</p></details>
+          <details><summary>生词是怎么挑出来的？</summary><p>用开源词典 ECDICT 查每个词的考试标签和词频排名，过滤掉中考、高考、四级范围的基础词和最常用的 5000 词，剩下的按出现次数排序。每次打开页面实时计算，不保存。</p></details>
+          <details><summary>字幕能导出吗？</summary><p>可以。阅读页右上角的"更多"里可以下载 SRT 字幕和纯文本，都是根据时间戳在浏览器里当场生成的。</p></details>
+          <details><summary>我的文件存在哪里？谁能看到？</summary><p>存在自建的对象存储里，只有你自己的账号能访问。上传和播放都使用有时效的签名链接，链接过期后就无法再打开。</p></details>
+          <h2>技术</h2>
+          <details><summary>为什么要用消息队列，而不是直接调用？</summary><p>转码要几十秒，转写要几秒到几分钟，用户不能一直等着一个请求返回。任务放进 RabbitMQ 后立即返回，worker 按自己的速度取任务；worker 崩溃或重启，任务也还在队列里，不会丢。</p></details>
+          <details><summary>服务之间用 gRPC，为什么生词服务用 HTTP？</summary><p>协议看调用方。01、02、03 之间是内部的 Go 服务互相调用，gRPC 有强类型接口，性能也好。生词服务要给浏览器和外部程序直接调用，而浏览器不能直接使用 gRPC，所以用 HTTP + JSON。</p></details>
+          <details><summary>文件为什么不经过后端服务？</summary><p>后端只负责签发有时效的 URL（控制面），文件字节由浏览器和 worker 直接和对象存储交换（数据面）。一个几百 MB 的视频不会占用 API 网关的带宽和内存，网关也就不会成为瓶颈。</p></details>
+          <details><summary>为什么按时长分成两条队列？</summary><p>短的要快，长的要省。云端 API 按时长计费（约每小时 0.22 美元），几十秒就出结果；本地模型免费，但慢。分开之后，短任务也不会排在两小时的长任务后面干等，也就是避免了队头阻塞。</p></details>
+          <details><summary>怎么扩容？</summary><p>worker 不保存状态，多开几个副本连到同一条队列就行，RabbitMQ 会把任务轮流分给它们（竞争消费者）。在 Kubernetes 上用 KEDA 按队列长度自动增减副本，队列清空后缩到零。</p></details>
+          <details><summary>Mac 关机了，长任务怎么办？</summary><p>队列是持久化的，任务会一直在 transcribe-long 里等着，Mac 重新连上后继续处理，不会丢失。</p></details>
+        </section>
       </main>
     </div>
-    <dialog id="detail" aria-labelledby="detail-title">
-      <header>
-        <div>
-          <span class="eyebrow" id="detail-kind">DETAIL</span>
-          <h2 id="detail-title">详情</h2>
-        </div>
-        <button id="close-detail" aria-label="关闭详情">×</button>
-      </header>
-      <div id="detail-content"></div>
+
+    <dialog id="tech">
+      <header><span>技术信息</span><button class="ghost" id="tech-close" aria-label="关闭">×</button></header>
+      <pre id="tech-body"></pre>
     </dialog>
     <div id="toast" role="status" hidden></div>
   </body>
