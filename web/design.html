@@ -1,0 +1,1036 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Vox 如何实现高性能：以语音模型支撑准确率，以内容工作流提高效率，以文件直传、阶段队列和独立 worker 改善速度，并用数据验证设计。"
+    />
+    <meta name="theme-color" content="#163e35" />
+    <title>高性能如何实现 · Vox 的设计与架构</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/project.css" />
+    <link rel="stylesheet" href="/design.css" />
+    <script src="/design.js" defer></script>
+  </head>
+  <body class="project-page design-page">
+    <a class="skip-link" href="#project-main">跳到设计与架构</a>
+    <header class="project-header">
+      <a class="brand" href="/" aria-label="Vox 工作台"
+        ><i aria-hidden="true"
+          ><b style="height: 40%"></b><b style="height: 100%"></b
+          ><b style="height: 65%"></b><b style="height: 85%"></b></i
+        >Vox<span class="project-wordmark">DESIGN NOTES</span></a
+      >
+      <nav aria-label="项目介绍导航">
+        <a href="/project.html">为什么做</a
+        ><a href="/design.html" aria-current="page">如何实现</a
+        ><a href="/roadmap.html">演进路线</a>
+      </nav>
+      <a href="/" class="button-link project-cta">进入工作台 ↗</a>
+    </header>
+    <main id="project-main" tabindex="-1">
+      <section class="design-hero" aria-labelledby="design-title">
+        <p class="eyebrow">PART 02 / 从性能目标，到整体架构</p>
+        <h1 id="design-title">高性能，落在这张图里。</h1>
+        <p class="project-lede">
+          左侧看完整架构，右侧读设计。选择维度，再点图中编号。
+        </p>
+      </section>
+      <div class="architecture-workspace">
+        <section
+          class="architecture-explorer"
+          id="engineering"
+          aria-label="交互式整体架构"
+          data-perspective="all"
+        >
+          <div class="architecture-toolbar">
+            <div
+              class="perspective-controls"
+              role="group"
+              aria-label="选择性能维度"
+            >
+              <button
+                type="button"
+                data-perspective="all"
+                aria-pressed="true"
+                aria-controls="architecture-map architecture-details"
+              >
+                整体架构</button
+              ><button
+                type="button"
+                id="accuracy-design"
+                data-perspective="accuracy"
+                aria-pressed="false"
+                aria-controls="architecture-map architecture-details"
+              >
+                <span class="perspective-dot accuracy-dot"></span>准确率</button
+              ><span class="perspective-times" aria-hidden="true">×</span
+              ><button
+                type="button"
+                id="productivity-design"
+                data-perspective="productivity"
+                aria-pressed="false"
+                aria-controls="architecture-map architecture-details"
+              >
+                <span class="perspective-dot productivity-dot"></span
+                >效率</button
+              ><span class="perspective-times" aria-hidden="true">×</span
+              ><button
+                type="button"
+                id="speed-design"
+                data-perspective="speed"
+                aria-pressed="false"
+                aria-controls="architecture-map architecture-details"
+              >
+                <span class="perspective-dot speed-dot"></span>速度
+              </button>
+            </div>
+            <div class="diagram-tools">
+              <button id="map-zoom" type="button" aria-label="放大架构图">
+                ＋ 放大</button
+              ><button
+                id="map-fit"
+                type="button"
+                aria-label="架构图适应可见宽度"
+              >
+                适应宽度
+              </button>
+            </div>
+          </div>
+          <div
+            class="architecture-context"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span id="perspective-name">整体架构</span>
+            <p id="perspective-summary">
+              先看全局：业务请求、媒体文件和耗时任务各走自己的路径。
+            </p>
+          </div>
+          <figure class="architecture-figure">
+            <div class="map-scroll-hint">
+              可左右滑动看全图，或点“适应宽度”查看全貌。
+            </div>
+            <div
+              class="architecture-viewport"
+              tabindex="0"
+              aria-label="整体架构图，可横向滚动；点击图中编号查看对应说明"
+            >
+              <svg
+                id="architecture-map"
+                viewBox="0 0 1200 690"
+                role="group"
+                aria-labelledby="map-title map-description"
+              >
+                <title id="map-title">Vox 整体架构与性能设计</title>
+                <desc id="map-description">
+                  浏览器经 nginx 访问 API 网关和生词服务。网关通过 gRPC
+                  调用文件服务和任务服务；任务服务通过 RabbitMQ
+                  先派发转码，完成回报后再派发短音频云端转写或长音频本地转写。浏览器和
+                  worker
+                  直接读写对象存储。选择上方维度可高亮模块，编号链接到右侧说明。
+                </desc>
+                <defs>
+                  <marker
+                    id="arrow-control"
+                    viewBox="0 0 10 10"
+                    refX="9"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M0 0 L10 5 L0 10Z" class="arrow-control" />
+                  </marker>
+                  <marker
+                    id="arrow-data"
+                    viewBox="0 0 10 10"
+                    refX="9"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M0 0 L10 5 L0 10Z" class="arrow-data" />
+                  </marker>
+                  <marker
+                    id="arrow-queue"
+                    viewBox="0 0 10 10"
+                    refX="9"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M0 0 L10 5 L0 10Z" class="arrow-queue" />
+                  </marker>
+                </defs>
+                <g class="map-regions" aria-hidden="true">
+                  <rect x="382" y="106" width="431" height="509" rx="14" />
+                  <text x="402" y="96">业务服务 · 身份、文件与任务元数据</text>
+                  <rect x="943" y="237" width="232" height="422" rx="14" />
+                  <text x="955" y="257">WORKERS · 分别扩展</text>
+                </g>
+                <g class="map-edge map-edge-data" data-edge="direct">
+                  <path
+                    d="M97 282 V44 H1072 V80"
+                    marker-start="url(#arrow-data)"
+                    marker-end="url(#arrow-data)"
+                  />
+                  <text x="590" y="27" text-anchor="middle">
+                    媒体直接上传 / 回听 / 读取结果 · 预签名 URL
+                  </text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="entry">
+                  <path d="M174 329 H220" marker-end="url(#arrow-control)" />
+                  <text x="197" y="316" text-anchor="middle">HTTP</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="api-route">
+                  <path
+                    d="M360 318 H382 V236 H402"
+                    marker-end="url(#arrow-control)"
+                  />
+                  <text x="370" y="223" text-anchor="middle">/api/</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="vocab-route">
+                  <path
+                    d="M360 341 H382 V465 H402"
+                    marker-end="url(#arrow-control)"
+                  />
+                  <text x="347" y="411" text-anchor="middle">/vocab/</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="file-rpc">
+                  <path
+                    d="M564 222 H592 V170 H627"
+                    marker-end="url(#arrow-control)"
+                  />
+                  <text x="591" y="158" text-anchor="middle">gRPC</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="task-rpc">
+                  <path
+                    d="M564 251 H592 V342 H627"
+                    marker-end="url(#arrow-control)"
+                  />
+                  <text x="591" y="329" text-anchor="middle">gRPC</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="signed">
+                  <path d="M709 298 V212" marker-end="url(#arrow-control)" />
+                  <text x="748" y="259" text-anchor="middle">签名 URL</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="storage-sign">
+                  <path
+                    d="M791 169 H912 V124 H976"
+                    marker-end="url(#arrow-control)"
+                  />
+                  <text x="876" y="157" text-anchor="middle">
+                    签名 / 完成校验
+                  </text>
+                </g>
+                <g class="map-edge map-edge-queue" data-edge="dispatch">
+                  <path d="M674 386 V477" marker-end="url(#arrow-queue)" />
+                  <text x="732" y="448" text-anchor="middle">
+                    派发 / 推进阶段
+                  </text>
+                </g>
+                <g class="map-edge map-edge-queue" data-edge="transcode-route">
+                  <path
+                    d="M791 508 H843 V311 H966"
+                    marker-end="url(#arrow-queue)"
+                  />
+                  <text x="877" y="298" text-anchor="middle">转码队列</text>
+                </g>
+                <g class="map-edge map-edge-queue" data-edge="cloud-route">
+                  <path
+                    d="M791 548 H872 V467 H966"
+                    marker-end="url(#arrow-queue)"
+                  />
+                  <text x="885" y="453" text-anchor="middle">短转写队列</text>
+                </g>
+                <g class="map-edge map-edge-queue" data-edge="local-route">
+                  <path
+                    d="M791 579 H869 V603 H966"
+                    marker-end="url(#arrow-queue)"
+                  />
+                  <text x="885" y="591" text-anchor="middle">长转写队列</text>
+                </g>
+                <g class="map-edge map-edge-control" data-edge="reports">
+                  <path
+                    d="M966 336 H919 V406 H748 V386 M966 490 H919 V336 M966 626 H919 V490"
+                    marker-end="url(#arrow-control)"
+                    stroke-dasharray="3 5"
+                  />
+                  <text x="798" y="398" text-anchor="middle">
+                    worker 状态回报
+                  </text>
+                </g>
+                <g class="map-edge map-edge-data" data-edge="worker-storage">
+                  <path
+                    d="M1168 125 H1185 V603 H1158 M1185 311 H1158 M1185 467 H1158"
+                    marker-start="url(#arrow-data)"
+                    marker-end="url(#arrow-data)"
+                  />
+                </g>
+                <text
+                  class="map-data-label"
+                  x="1167"
+                  y="396"
+                  text-anchor="middle"
+                  transform="rotate(90 1167 396)"
+                >
+                  worker 直接读写文件
+                </text>
+                <g class="map-node" data-node="browser">
+                  <rect x="20" y="282" width="154" height="94" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="97.0"
+                    y="308"
+                    text-anchor="middle"
+                  >
+                    Vox 工作台
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="97.0"
+                    y="330"
+                    text-anchor="middle"
+                  >
+                    录音 / 上传
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="97.0"
+                    y="348"
+                    text-anchor="middle"
+                  >
+                    阅读 · 回听 · 导出
+                  </text>
+                </g>
+                <g class="map-node" data-node="web">
+                  <rect x="220" y="296" width="140" height="66" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="290.0"
+                    y="322"
+                    text-anchor="middle"
+                  >
+                    web · nginx
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="290.0"
+                    y="344"
+                    text-anchor="middle"
+                  >
+                    静态页 / 反向代理
+                  </text>
+                </g>
+                <g class="map-node" data-node="api">
+                  <rect x="402" y="194" width="162" height="85" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="483.0"
+                    y="220"
+                    text-anchor="middle"
+                  >
+                    01 API 网关
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="483.0"
+                    y="242"
+                    text-anchor="middle"
+                  >
+                    Gin · JWT
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="483.0"
+                    y="260"
+                    text-anchor="middle"
+                  >
+                    userdb · PostgreSQL
+                  </text>
+                </g>
+                <g class="map-node" data-node="vocab">
+                  <rect x="402" y="426" width="162" height="80" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="483.0"
+                    y="452"
+                    text-anchor="middle"
+                  >
+                    05 生词服务
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="483.0"
+                    y="474"
+                    text-anchor="middle"
+                  >
+                    HTTP · ECDICT
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="483.0"
+                    y="492"
+                    text-anchor="middle"
+                  >
+                    英文候选与释义
+                  </text>
+                </g>
+                <g class="map-node" data-node="file">
+                  <rect x="627" y="128" width="164" height="84" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="709.0"
+                    y="154"
+                    text-anchor="middle"
+                  >
+                    02 文件服务
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="176"
+                    text-anchor="middle"
+                  >
+                    归属 / 元数据 / 签名
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="194"
+                    text-anchor="middle"
+                  >
+                    filedb · PostgreSQL
+                  </text>
+                </g>
+                <g class="map-node" data-node="task">
+                  <rect x="627" y="298" width="164" height="88" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="709.0"
+                    y="324"
+                    text-anchor="middle"
+                  >
+                    03 任务服务
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="346"
+                    text-anchor="middle"
+                  >
+                    阶段编排 / 长短分流
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="364"
+                    text-anchor="middle"
+                  >
+                    taskdb · PostgreSQL
+                  </text>
+                </g>
+                <g class="map-node" data-node="queue">
+                  <rect x="627" y="477" width="164" height="118" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="709.0"
+                    y="503"
+                    text-anchor="middle"
+                  >
+                    RabbitMQ
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="525"
+                    text-anchor="middle"
+                  >
+                    exchange vox.tasks
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="543"
+                    text-anchor="middle"
+                  >
+                    transcode
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709.0"
+                    y="561"
+                    text-anchor="middle"
+                  >
+                    transcribe-short
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="709"
+                    y="579"
+                    text-anchor="middle"
+                  >
+                    transcribe-long
+                  </text>
+                </g>
+                <g class="map-node" data-node="storage">
+                  <rect x="976" y="80" width="192" height="90" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="1072.0"
+                    y="106"
+                    text-anchor="middle"
+                  >
+                    对象存储
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1072.0"
+                    y="128"
+                    text-anchor="middle"
+                  >
+                    原始媒体 / 标准音轨
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1072.0"
+                    y="146"
+                    text-anchor="middle"
+                  >
+                    转写结果 JSON
+                  </text>
+                </g>
+                <g class="map-node" data-node="transcode">
+                  <rect x="966" y="273" width="192" height="76" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="1062.0"
+                    y="299"
+                    text-anchor="middle"
+                  >
+                    06 转码 worker
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="321"
+                    text-anchor="middle"
+                  >
+                    ffmpeg → 16 kHz WAV
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="339"
+                    text-anchor="middle"
+                  >
+                    独立进程 · 可增实例
+                  </text>
+                </g>
+                <g class="map-node" data-node="cloud">
+                  <rect x="966" y="429" width="192" height="76" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="1062.0"
+                    y="455"
+                    text-anchor="middle"
+                  >
+                    04 云端转写
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="477"
+                    text-anchor="middle"
+                  >
+                    ElevenLabs · Scribe v2
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="495"
+                    text-anchor="middle"
+                  >
+                    短音频 · 默认 ≤10 分钟
+                  </text>
+                </g>
+                <g class="map-node" data-node="local">
+                  <rect x="966" y="565" width="192" height="76" rx="9" />
+                  <text
+                    class="map-node-title"
+                    x="1062.0"
+                    y="591"
+                    text-anchor="middle"
+                  >
+                    04 本地转写
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="613"
+                    text-anchor="middle"
+                  >
+                    whisper.cpp
+                  </text>
+                  <text
+                    class="map-node-caption"
+                    x="1062.0"
+                    y="631"
+                    text-anchor="middle"
+                  >
+                    长音频 · 部署机器运行
+                  </text>
+                </g>
+                <g id="map-callouts">
+                  <a
+                    href="#design-note-1"
+                    aria-label="查看说明 1：一个工作台，连接输入与结果"
+                    class="map-callout"
+                  >
+                    <circle cx="20" cy="282" r="13" />
+                    <text x="20" y="286" text-anchor="middle">1</text>
+                  </a>
+                  <a
+                    href="#design-note-2"
+                    aria-label="查看说明 2：三个业务服务，管理身份与归属"
+                    class="map-callout"
+                  >
+                    <circle cx="402" cy="194" r="13" />
+                    <text x="402" y="198" text-anchor="middle">2</text>
+                  </a>
+                  <a
+                    href="#design-note-3"
+                    aria-label="查看说明 3：队列衔接阶段，长短转写分开"
+                    class="map-callout"
+                  >
+                    <circle cx="627" cy="477" r="13" />
+                    <text x="627" y="481" text-anchor="middle">3</text>
+                  </a>
+                  <a
+                    href="#design-note-4"
+                    aria-label="查看说明 4：三类 worker，可以分别扩展"
+                    class="map-callout"
+                  >
+                    <circle cx="966" cy="273" r="13" />
+                    <text x="966" y="277" text-anchor="middle">4</text>
+                  </a>
+                  <a
+                    href="#design-note-4"
+                    aria-label="查看说明 4：三类 worker，可以分别扩展"
+                    class="map-callout"
+                  >
+                    <circle cx="966" cy="429" r="13" />
+                    <text x="966" y="433" text-anchor="middle">4</text>
+                  </a>
+                  <a
+                    href="#design-note-4"
+                    aria-label="查看说明 4：三类 worker，可以分别扩展"
+                    class="map-callout"
+                  >
+                    <circle cx="966" cy="565" r="13" />
+                    <text x="966" y="569" text-anchor="middle">4</text>
+                  </a>
+                  <a
+                    href="#design-note-5"
+                    aria-label="查看说明 5：文件直达存储，结果持续保留"
+                    class="map-callout"
+                  >
+                    <circle cx="976" cy="80" r="13" />
+                    <text x="976" y="84" text-anchor="middle">5</text>
+                  </a>
+                  <a
+                    href="#design-note-6"
+                    aria-label="查看说明 6：生词服务，接上学习场景"
+                    class="map-callout"
+                  >
+                    <circle cx="402" cy="426" r="13" />
+                    <text x="402" y="430" text-anchor="middle">6</text>
+                  </a>
+                </g>
+              </svg>
+            </div>
+            <figcaption class="map-legend">
+              <span
+                ><i class="legend-line control-line"></i>业务调用 /
+                状态回报</span
+              ><span><i class="legend-line data-line"></i>媒体文件直传</span
+              ><span><i class="legend-line queue-line"></i>任务队列</span
+              ><span class="map-legend-note" id="map-active-legend"
+                >点击编号 → 右侧说明</span
+              >
+            </figcaption>
+          </figure>
+          <p class="map-flow-note">
+            处理顺序：上传 → 转码 → 回报任务服务 → 长短转写分流 →
+            保存结果。图示为逻辑架构，云端 worker 需按部署启用。
+          </p>
+        </section>
+        <aside
+          class="architecture-inspector"
+          id="decisions"
+          aria-labelledby="details-title"
+        >
+          <div class="inspector-heading">
+            <div>
+              <p class="eyebrow">DESIGN NOTES / 图解</p>
+              <h2 id="details-title">整体架构</h2>
+            </div>
+            <button
+              type="button"
+              class="inspector-close"
+              aria-label="关闭架构说明"
+            >
+              ×
+            </button>
+          </div>
+          <p class="inspector-prompt">点击左侧编号，在这里展开。</p>
+          <div
+            id="note-tabs"
+            class="note-tabs"
+            role="group"
+            aria-label="选择架构说明"
+          ></div>
+          <div id="architecture-details" class="map-notes">
+            <article class="map-note" id="design-note-1" tabindex="-1">
+              <span class="map-note-number">01</span>
+              <div>
+                <h3>一个工作台，连接输入与结果</h3>
+                <p>
+                  浏览器负责录音、上传、阅读、按句回听与导出；nginx
+                  提供页面并转发业务请求。
+                </p>
+                <p class="map-note-evidence">
+                  录音与字幕交互在前端；耗时处理在后台继续。
+                </p>
+              </div>
+            </article>
+            <article class="map-note" id="design-note-2" tabindex="-1">
+              <span class="map-note-number">02</span>
+              <div>
+                <h3>三个业务服务，管理身份与归属</h3>
+                <p>
+                  API 网关处理登录与
+                  JWT；文件服务管理文件元数据和签名地址；任务服务保存任务、编排阶段。
+                </p>
+                <p class="map-note-evidence">
+                  userdb / filedb / taskdb 分别保存对应元数据。
+                </p>
+              </div>
+            </article>
+            <article class="map-note" id="design-note-3" tabindex="-1">
+              <span class="map-note-number">03</span>
+              <div>
+                <h3>队列衔接阶段，长短转写分开</h3>
+                <p>
+                  先进入转码队列；完成回报后，任务服务按音频时长派发到短转写或长转写队列。
+                </p>
+                <p class="map-note-evidence">
+                  默认以 10 分钟分流，可通过配置调整。
+                </p>
+              </div>
+            </article>
+            <article class="map-note" id="design-note-4" tabindex="-1">
+              <span class="map-note-number">04</span>
+              <div>
+                <h3>三类 worker，可以分别扩展</h3>
+                <p>
+                  ffmpeg
+                  统一音轨；短音频走云端转写实现，长音频走本地模型。每一类消费者可独立增加实例。
+                </p>
+                <p class="map-note-evidence">
+                  图示是处理拓扑，不代表当前实例数；云端 worker 需单独部署启用。
+                </p>
+              </div>
+            </article>
+            <article class="map-note" id="design-note-5" tabindex="-1">
+              <span class="map-note-number">05</span>
+              <div>
+                <h3>文件直达存储，结果持续保留</h3>
+                <p>
+                  原始媒体、标准音轨与转写结果写入对象存储。浏览器与 worker
+                  按签名地址读写，文件字节不绕经 API 网关。
+                </p>
+                <p class="map-note-evidence">
+                  文件服务校验归属与上传完成，元数据关联原始内容和结果。
+                </p>
+              </div>
+            </article>
+            <article class="map-note" id="design-note-6" tabindex="-1">
+              <span class="map-note-number">06</span>
+              <div>
+                <h3>生词服务，接上学习场景</h3>
+                <p>
+                  浏览器把英文转写交给词汇服务，通过 ECDICT
+                  规则筛选生词候选并返回释义，在阅读时查看。
+                </p>
+                <p class="map-note-evidence">
+                  与播放器、转写结果独立加载；当前不是个性化单词本。
+                </p>
+              </div>
+            </article>
+          </div>
+          <details class="inspector-measure">
+            <summary>如何验证这一维度</summary>
+            <p id="perspective-measure">按真实任务观察处理链路与使用体验。</p>
+          </details>
+          <noscript
+            ><p class="map-measure">
+              当前显示完整架构。启用 JavaScript
+              后，可以按准确率、效率和速度筛选高亮。
+            </p></noscript
+          >
+        </aside>
+      </div>
+
+      <details class="design-extra" id="comparison">
+        <summary>
+          <span
+            ><small>继续深入 / 方案取舍</small
+            ><strong>相比直接接 API 或单体应用，取舍在哪里？</strong></span
+          ><span class="extra-sign" aria-hidden="true">＋</span>
+        </summary>
+        <div class="design-extra-body">
+          <p class="comparison-intro">
+            识别 API
+            提供语音识别能力，单体也可以实现完整产品。这里比较的是三种实现范围与资源组织方式；Vox
+            的价值在于把这些能力接成了可持续使用的工作流。
+          </p>
+          <p class="comparison-hint">左右滑动，查看完整方案对比 →</p>
+          <div
+            class="comparison-scroll"
+            tabindex="0"
+            aria-label="方案对比表，可横向滚动"
+          >
+            <table class="comparison-table">
+              <caption class="visually-hidden">
+                最小 API 接入、同步单进程实现与 Vox 的范围和取舍
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">关注点</th>
+                  <th scope="col">仅接入转写 API<small>最小接入方式</small></th>
+                  <th scope="col">
+                    同步单进程应用<small>Web 与耗时处理同部署</small>
+                  </th>
+                  <th scope="col">Vox<small>归档 + 回听 + 异步处理</small></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">转写之后</th>
+                  <td>得到识别结果；个人内容库与回听交互需继续建设。</td>
+                  <td>可以实现归档与阅读，体验取决于额外的产品设计。</td>
+                  <td>
+                    文件、结果、时间戳和生词在同一工作台中关联，支持再次使用与导出。
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">等待长任务</th>
+                  <td>调用方负责管理等待、状态和结果保存。</td>
+                  <td>同步处理会延长请求等待，并与 Web 共享运行资源。</td>
+                  <td>任务创建与执行分开；阶段与结果可查询，前端定期更新。</td>
+                </tr>
+                <tr>
+                  <th scope="row">增加处理能力</th>
+                  <td>受服务提供方配额和调用预算约束。</td>
+                  <td>通常以整个应用为部署单位；也可进一步拆分后台任务。</td>
+                  <td>
+                    按转码、短转写、长转写分别增加消费者，针对积压分配资源。
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">引擎与成本选择</th>
+                  <td>采用选定提供方的能力与计费方式。</td>
+                  <td>同样可以集成不同引擎，但需自行设计切换与结果适配。</td>
+                  <td>
+                    以统一接口接本地与云端引擎，按时长分流；成本取舍可继续调优。
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">需要承担的复杂度</th>
+                  <td>接入轻；仍需补齐用户、内容管理与异常处理。</td>
+                  <td>部署和本地调试简单，适合较小规模或早期验证。</td>
+                  <td>增加了跨服务通信、队列、部署与一致性治理成本。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="comparison-summary">
+            适合 Vox
+            的场景：希望长期积累音视频资料、经常按句复听，且转码与转写负载需要分别安排资源。
+          </p>
+        </div>
+      </details>
+
+      <details class="design-extra" id="delivery">
+        <summary>
+          <span
+            ><small>继续深入 / 验证与代码依据</small
+            ><strong>这些设计已经做到什么，又该怎样验证？</strong></span
+          ><span class="extra-sign" aria-hidden="true">＋</span>
+        </summary>
+        <div class="design-extra-body">
+          <div class="delivery-grid">
+            <article>
+              <span class="delivery-label">已在代码中实现</span>
+              <h3>从用户输入到结果复用的完整链路</h3>
+              <ul>
+                <li>录音试听、文件上传、异步转写与历史内容读取。</li>
+                <li>时间戳定位、同步高亮、生词候选及 TXT / SRT 导出。</li>
+                <li>账户归属检查、对象存储直传、阶段队列与两类转写引擎。</li>
+                <li>
+                  Chromium 回归使用模拟 API
+                  和麦克风，覆盖录音、播放、跳转、失败恢复与移动布局。
+                </li>
+              </ul>
+            </article>
+            <article>
+              <span class="delivery-label next">后续工程验证</span>
+              <h3>下一步：测量性能，补齐可靠性</h3>
+              <ul>
+                <li>
+                  独立扩展路径已具备；并发吞吐、延迟与成本仍需压测，尚无容量数字承诺。
+                </li>
+                <li>
+                  KEDA 配置是待更新的示例，仍需对齐当前队列并验证自动扩缩容。
+                </li>
+                <li>继续完善任务幂等、失败重试、死信与数据库/消息一致性。</li>
+                <li>
+                  补齐备份恢复、用户配额、服务访问边界与监控告警；持久存储不等于永久保存承诺。
+                </li>
+              </ul>
+            </article>
+          </div>
+          <div class="measurement-plan">
+            <h3>用同一组任务，分别测量准确率、效率与速度</h3>
+            <p>
+              固定音频、任务目标、模型版本、硬件与并发条件，先记录基线，再比较优化后的表现。以下是测量计划，目前尚无量化基准结果。
+            </p>
+            <dl>
+              <div>
+                <dt>效率 · 用户投入</dt>
+                <dd>
+                  完成一次转写和定位回听所需的操作次数、主动操作时间、查找时间与校对时间。
+                </dd>
+              </div>
+              <div>
+                <dt>速度 · 端到端耗时</dt>
+                <dd>
+                  分别记录上传、排队、转码和转写耗时，再看端到端耗时的中位数与
+                  P95。
+                </dd>
+              </div>
+              <div>
+                <dt>准确率 · 识别质量</dt>
+                <dd>
+                  在人工标注的相同样本上统计字词错误率，并记录人工校对时间。回听方便不等于模型识别率更高。
+                </dd>
+              </div>
+              <div>
+                <dt>效率 · 有效产出</dt>
+                <dd>
+                  检查关键内容能否被正确找回、定位与导出，观察后续任务是否真正复用了这些结果。
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <details class="source-notes">
+            <summary>
+              展开实现依据与当前边界 <span aria-hidden="true">＋</span>
+            </summary>
+            <div class="source-notes-body">
+              <p>
+                以下链接指向仓库实现，便于继续追问设计细节。没有用未经测量的性能数字或“零丢失”承诺代替验证。
+              </p>
+              <ul>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/04_transcriberService/internal/transcriber/whisper.go"
+                    target="_blank"
+                    rel="noopener"
+                    >Whisper 本地转写</a
+                  >与<a
+                    href="https://github.com/justyura/vox/blob/HEAD/04_transcriberService/internal/elevenlabs/elevenlabs.go"
+                    target="_blank"
+                    rel="noopener"
+                    >ElevenLabs Scribe v2 接入</a
+                  >：模型提供识别能力，统一正文与时间戳供前端使用。
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/03_taskService/internal/service/task.go"
+                    target="_blank"
+                    rel="noopener"
+                    >任务阶段与长短音频分流</a
+                  >：转码后选择转写队列；默认阈值可通过配置调整。
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/03_taskService/internal/distributor/rabbitmq.go"
+                    target="_blank"
+                    rel="noopener"
+                    >持久化队列与消息</a
+                  >：目前不宣称自动重试、恰好一次或端到端零丢失。
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/02_fileService/internal/service/service.go"
+                    target="_blank"
+                    rel="noopener"
+                    >文件归属、完成校验与签名地址</a
+                  >：对象与元数据分开持久保存；签名地址有时效。
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/04_transcriberService/internal/worker/worker.go"
+                    target="_blank"
+                    rel="noopener"
+                    >统一 Transcriber 接口</a
+                  >：本地和云端返回相同的结果结构。
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/justyura/vox/blob/HEAD/05_vocabularyService/cmd/main.go"
+                    target="_blank"
+                    rel="noopener"
+                    >英文生词候选提取</a
+                  >：词典规则筛选，尚未按个人掌握程度进行个性化。
+                </li>
+              </ul>
+              <p>
+                两类转写引擎已有实现；当前 Compose 没有包含云端
+                worker，需按实际部署启用。任务阶段与结果可查询，处理中的状态回报仍需完善。搜索目前针对文件名与
+                ID；段落定位依赖已有时间戳。未提交的录音草稿只保存在当前页面，提交成功后才进入服务器端内容管理。真实设备、线上存储及
+                Safari/iOS 仍需联调验证。
+              </p>
+            </div>
+          </details>
+        </div>
+      </details>
+
+      <section class="project-closing">
+        <div>
+          <p class="eyebrow">设计回到使用中，才有意义</p>
+          <h2>用真实任务，检验这些选择。</h2>
+          <p>体验录音、转写与按句回听，或回到性能理念继续了解产品目标。</p>
+        </div>
+        <a class="button-link" href="/">进入 Vox 工作台 ↗</a>
+      </section>
+      <footer class="project-footer">
+        <a href="/project.html">← 为什么做 Vox</a
+        ><a
+          href="https://github.com/justyura/vox"
+          target="_blank"
+          rel="noopener"
+          >查看项目源码 ↗</a
+        ><a href="#design-title">回到顶部 ↑</a>
+      </footer>
+    </main>
+    <dialog id="architecture-dialog" aria-labelledby="details-title"></dialog>
+  </body>
+</html>

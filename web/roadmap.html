@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="根据 Vox 的真实 Git 历史，回看从上传、语音识别到服务拆分、异步队列与内容学习的演进路线。"
+    />
+    <meta name="theme-color" content="#163e35" />
+    <title>演进路线 · Vox</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/project.css" />
+    <link rel="stylesheet" href="/roadmap.css" />
+  </head>
+  <body class="project-page roadmap-page">
+    <a class="skip-link" href="#project-main">跳到演进路线</a>
+    <header class="project-header">
+      <a class="brand" href="/" aria-label="Vox 工作台"
+        ><i aria-hidden="true"
+          ><b style="height: 40%"></b><b style="height: 100%"></b
+          ><b style="height: 65%"></b><b style="height: 85%"></b></i
+        >Vox<span class="project-wordmark">PERFORMANCE BY DESIGN</span></a
+      >
+      <nav aria-label="项目介绍导航">
+        <a href="/project.html">为什么做</a><a href="/design.html">如何实现</a
+        ><a href="/roadmap.html" aria-current="page">演进路线</a>
+      </nav>
+      <a href="/" class="button-link project-cta">进入工作台 ↗</a>
+    </header>
+    <main id="project-main" tabindex="-1">
+      <section class="roadmap-hero">
+        <p class="eyebrow">PART 03 / BUILT STEP BY STEP</p>
+        <h1 id="roadmap-title">从第一段录音，<br />走向完整的语音平台。</h1>
+        <p>先解决一个真实问题，再把识别、内容管理和计算方式一步步接起来。</p>
+        <div class="roadmap-meta">
+          <span>2026.02 → 2026.09</span><span>基于当前分支的真实 Git 历史</span
+          ><span>代码快照 e3ab251</span>
+        </div>
+      </section>
+      <div class="roadmap-key">
+        <span><i></i>已提交的实现</span
+        ><span><i class="current-dot"></i>当前工作区</span
+        ><span><i class="next-dot"></i>后续计划</span>
+      </div>
+      <ol class="history-road">
+        <li class="history-stop" id="milestone-01">
+          <div class="history-date">
+            <time>2026.02</time><span>上传、账户与存储</span>
+          </div>
+          <span class="history-marker">01</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>先让内容进来，也能留下来。</h2>
+            <p>
+              从 Gin 服务、音频上传与校验开始，加入 PostgreSQL、注册登录、JWT
+              和对象存储上传追踪。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>建立内容属于谁、保存在哪里的基础，支持之后找回和管理。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="223bd21946a9e8b06d4fbc99255f2ef514afadf4">
+                  <a
+                    href="https://github.com/justyura/vox/commit/223bd21946a9e8b06d4fbc99255f2ef514afadf4"
+                    target="_blank"
+                    rel="noopener"
+                    >223bd21 ↗</a
+                  ><time>2026-02-13</time
+                  ><span>feat: add audio upload with validation and tests</span>
+                </li>
+                <li data-commit="902629e2bb60d35bf900ca986d401bc1d97864b6">
+                  <a
+                    href="https://github.com/justyura/vox/commit/902629e2bb60d35bf900ca986d401bc1d97864b6"
+                    target="_blank"
+                    rel="noopener"
+                    >902629e ↗</a
+                  ><time>2026-02-17</time
+                  ><span
+                    >feat: add user authentication with signup and login</span
+                  >
+                </li>
+                <li data-commit="5dfa34be91ce545b6b65beba79c8ef12791ef04a">
+                  <a
+                    href="https://github.com/justyura/vox/commit/5dfa34be91ce545b6b65beba79c8ef12791ef04a"
+                    target="_blank"
+                    rel="noopener"
+                    >5dfa34b ↗</a
+                  ><time>2026-02-28</time
+                  ><span>feat: file upload to OSS with DB tracking</span>
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-02">
+          <div class="history-date">
+            <time>2026.03</time><span>本地识别</span>
+          </div>
+          <span class="history-marker">02</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>让声音第一次变成文字。</h2>
+            <p>
+              通过 cgo 接入 whisper.cpp，加入本地转写与快捷键录音，并支持将 m4a
+              转成 WAV。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>形成从声音输入到文字输出的最初流程。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="78ca9cd0dbb9dac45af04cc847a0daad256e5617">
+                  <a
+                    href="https://github.com/justyura/vox/commit/78ca9cd0dbb9dac45af04cc847a0daad256e5617"
+                    target="_blank"
+                    rel="noopener"
+                    >78ca9cd ↗</a
+                  ><time>2026-03-09</time
+                  ><span
+                    >feat: add whisper transcriber via whisper.cpp, bridge
+                    golang and c via cgo</span
+                  >
+                </li>
+                <li data-commit="588498c635364ca9dd607c313608de7434121a98">
+                  <a
+                    href="https://github.com/justyura/vox/commit/588498c635364ca9dd607c313608de7434121a98"
+                    target="_blank"
+                    rel="noopener"
+                    >588498c ↗</a
+                  ><time>2026-03-09</time
+                  ><span
+                    >feat: add local transcription API with hotkey
+                    recording</span
+                  >
+                </li>
+                <li data-commit="5ea9f3f22f0ed4232a81c0983e0ec6fc9684da97">
+                  <a
+                    href="https://github.com/justyura/vox/commit/5ea9f3f22f0ed4232a81c0983e0ec6fc9684da97"
+                    target="_blank"
+                    rel="noopener"
+                    >5ea9f3f ↗</a
+                  ><time>2026-03-09</time
+                  ><span
+                    >feat: add support for IOS shortcut, transfer m4a to wav via
+                    ffmpeg</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-03">
+          <div class="history-date">
+            <time>2026.04—05</time><span>服务拆分</span>
+          </div>
+          <span class="history-marker">03</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>从单体走向明确的服务边界。</h2>
+            <p>
+              逐步建立 API、文件、任务和转写服务，以 gRPC
+              连接；文件存储与元数据实现采用接口抽象。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>为替换存储实现、独立部署和后台处理建立边界。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 4 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="7753242148f8cf72903b5129aa8e3de427863c44">
+                  <a
+                    href="https://github.com/justyura/vox/commit/7753242148f8cf72903b5129aa8e3de427863c44"
+                    target="_blank"
+                    rel="noopener"
+                    >7753242 ↗</a
+                  ><time>2026-04-15</time
+                  ><span
+                    >refactor: remove monolith code in favor of
+                    microservices</span
+                  >
+                </li>
+                <li data-commit="f58a8ed9c6d97d6ae56458b67e179690c18bf751">
+                  <a
+                    href="https://github.com/justyura/vox/commit/f58a8ed9c6d97d6ae56458b67e179690c18bf751"
+                    target="_blank"
+                    rel="noopener"
+                    >f58a8ed ↗</a
+                  ><time>2026-04-22</time
+                  ><span
+                    >feat: add 02_fileService with gRPC server, MinIO blob, and
+                    Postgres meta</span
+                  >
+                </li>
+                <li data-commit="9f32895883a2e1f8e4e387342c0c2676ef2357e0">
+                  <a
+                    href="https://github.com/justyura/vox/commit/9f32895883a2e1f8e4e387342c0c2676ef2357e0"
+                    target="_blank"
+                    rel="noopener"
+                    >9f32895 ↗</a
+                  ><time>2026-05-10</time
+                  ><span
+                    >refactor: design oss interface and minio
+                    implementation</span
+                  >
+                </li>
+                <li data-commit="008730249e547fadaaa112c536a4ce45bf38ab4c">
+                  <a
+                    href="https://github.com/justyura/vox/commit/008730249e547fadaaa112c536a4ce45bf38ab4c"
+                    target="_blank"
+                    rel="noopener"
+                    >0087302 ↗</a
+                  ><time>2026-05-14</time
+                  ><span
+                    >feature: grpc server to provide file Upload, Download, List
+                    completed</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-04">
+          <div class="history-date">
+            <time>2026.06—07</time><span>异步处理</span>
+          </div>
+          <span class="history-marker">04</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>把耗时识别交给后台 worker。</h2>
+            <p>
+              引入 RabbitMQ、worker
+              处理流水线和状态回报，接通任务接口；加入网页入口与 Compose 部署。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>任务创建与执行分开，长任务不再依赖持续等待的 Web 请求。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 4 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="883f9ad23a4e248d887cd13fc2281e7e72fbfa19">
+                  <a
+                    href="https://github.com/justyura/vox/commit/883f9ad23a4e248d887cd13fc2281e7e72fbfa19"
+                    target="_blank"
+                    rel="noopener"
+                    >883f9ad ↗</a
+                  ><time>2026-06-10</time
+                  ><span
+                    >feat: add RabbitMQ publisher/consumer skeleton for task
+                    queue</span
+                  >
+                </li>
+                <li data-commit="b5434405884155f435e946caf09aa22162e313e2">
+                  <a
+                    href="https://github.com/justyura/vox/commit/b5434405884155f435e946caf09aa22162e313e2"
+                    target="_blank"
+                    rel="noopener"
+                    >b543440 ↗</a
+                  ><time>2026-07-12</time
+                  ><span
+                    >feat: rework 04 worker - pipeline, manual ack, grpc
+                    callback, e2e transcription verified</span
+                  >
+                </li>
+                <li data-commit="76dd98fab9ff16b53a32a1257a19149a6a0c3d25">
+                  <a
+                    href="https://github.com/justyura/vox/commit/76dd98fab9ff16b53a32a1257a19149a6a0c3d25"
+                    target="_blank"
+                    rel="noopener"
+                    >76dd98f ↗</a
+                  ><time>2026-07-19</time
+                  ><span
+                    >feat: add static frontend - login, upload, transcribe,
+                    poll</span
+                  >
+                </li>
+                <li data-commit="d36dfb43e74cfcc2214c112db98a3e8c9234e1f4">
+                  <a
+                    href="https://github.com/justyura/vox/commit/d36dfb43e74cfcc2214c112db98a3e8c9234e1f4"
+                    target="_blank"
+                    rel="noopener"
+                    >d36dfb4 ↗</a
+                  ><time>2026-07-28</time
+                  ><span
+                    >feat: containerize all services with docker-compose</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-05">
+          <div class="history-date">
+            <time>2026.08—09.09</time><span>时间戳与存储</span>
+          </div>
+          <span class="history-marker">05</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>文字开始能回到真实的声音。</h2>
+            <p>
+              为转写增加段落结构，在前端使用；随后修正本地模型时间戳读取方式，并扩展阿里云
+              OSS 存储实现。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>从一整篇文字，走向可按段定位与回听的内容。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="f1020c325b576b396ad466cc89a00ac6dcdb59bc">
+                  <a
+                    href="https://github.com/justyura/vox/commit/f1020c325b576b396ad466cc89a00ac6dcdb59bc"
+                    target="_blank"
+                    rel="noopener"
+                    >f1020c3 ↗</a
+                  ><time>2026-08-02</time
+                  ><span
+                    >feat: add segements for transcription result &amp; use it
+                    in the frontend</span
+                  >
+                </li>
+                <li data-commit="8404545b636ddac9a62a0a1fe672be0ef3e54817">
+                  <a
+                    href="https://github.com/justyura/vox/commit/8404545b636ddac9a62a0a1fe672be0ef3e54817"
+                    target="_blank"
+                    rel="noopener"
+                    >8404545 ↗</a
+                  ><time>2026-08-03</time
+                  ><span
+                    >feat: add aliyun oss implementation of blob interface</span
+                  >
+                </li>
+                <li data-commit="ab4642a154cf639464a9ec10ff974a8751441307">
+                  <a
+                    href="https://github.com/justyura/vox/commit/ab4642a154cf639464a9ec10ff974a8751441307"
+                    target="_blank"
+                    rel="noopener"
+                    >ab4642a ↗</a
+                  ><time>2026-09-09</time
+                  ><span
+                    >fix: pull segments instead of using the callback for real
+                    timestamps</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-06">
+          <div class="history-date">
+            <time>2026.09.13</time><span>标准音轨</span>
+          </div>
+          <span class="history-marker">06</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>把转码加入正式处理链路。</h2>
+            <p>
+              新增独立 ffmpeg 转码 worker，任务服务先派发转码，再进入转写阶段。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>用户提交媒体后，系统接手音轨准备，减少手工格式转换。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 2 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="4743398b32a6838582d1c31889ab5abc52e40199">
+                  <a
+                    href="https://github.com/justyura/vox/commit/4743398b32a6838582d1c31889ab5abc52e40199"
+                    target="_blank"
+                    rel="noopener"
+                    >4743398 ↗</a
+                  ><time>2026-09-13</time
+                  ><span
+                    >feat: add transcode worker that normalizes media with
+                    ffmpeg</span
+                  >
+                </li>
+                <li data-commit="68d35d909e885552f52bdc70153ad72694d753a3">
+                  <a
+                    href="https://github.com/justyura/vox/commit/68d35d909e885552f52bdc70153ad72694d753a3"
+                    target="_blank"
+                    rel="noopener"
+                    >68d35d9 ↗</a
+                  ><time>2026-09-13</time
+                  ><span
+                    >feat: run transcode before transcribe as a task stage</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-07">
+          <div class="history-date">
+            <time>2026.09.19—22</time><span>生词与阅读</span>
+          </div>
+          <span class="history-marker">07</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>让转写稿继续服务学习。</h2>
+            <p>
+              实现词汇提取 HTTP 服务，加入部署与前端高亮；Web 改由独立 nginx
+              容器提供。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>正文、生词候选和释义形成关联，提高同一份内容的使用价值。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="9781c71c0cfff9bab1822a2c9d902be82fdf82d0">
+                  <a
+                    href="https://github.com/justyura/vox/commit/9781c71c0cfff9bab1822a2c9d902be82fdf82d0"
+                    target="_blank"
+                    rel="noopener"
+                    >9781c71 ↗</a
+                  ><time>2026-09-19</time
+                  ><span>feat: add vocabulary extraction http service</span>
+                </li>
+                <li data-commit="29a05cfce5b8e99ab566d699ab33a29af78f3e89">
+                  <a
+                    href="https://github.com/justyura/vox/commit/29a05cfce5b8e99ab566d699ab33a29af78f3e89"
+                    target="_blank"
+                    rel="noopener"
+                    >29a05cf ↗</a
+                  ><time>2026-09-19</time
+                  ><span
+                    >feat: serve the web client from its own nginx
+                    container</span
+                  >
+                </li>
+                <li data-commit="f9693f26e5f10336c54b6d7ede2b9df739d1ce23">
+                  <a
+                    href="https://github.com/justyura/vox/commit/f9693f26e5f10336c54b6d7ede2b9df739d1ce23"
+                    target="_blank"
+                    rel="noopener"
+                    >f9693f2 ↗</a
+                  ><time>2026-09-22</time
+                  ><span
+                    >feat: optimize frontend rendering, can highlight the
+                    words</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-08">
+          <div class="history-date">
+            <time>2026.09.22</time><span>混合引擎与分队列</span>
+          </div>
+          <span class="history-marker">08</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>长短音频，走不同处理路径。</h2>
+            <p>
+              增加 ElevenLabs 云端转写
+              worker；按音频时长拆分短、长转写队列，并允许配置默认 10 分钟阈值。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>
+                分开组织等待与资源：短任务走云端，长任务用本地计算，减少长音频云端调用量。
+              </p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="7673a810d864d023372f6a59300f2c7587cddb39">
+                  <a
+                    href="https://github.com/justyura/vox/commit/7673a810d864d023372f6a59300f2c7587cddb39"
+                    target="_blank"
+                    rel="noopener"
+                    >7673a81 ↗</a
+                  ><time>2026-09-22</time
+                  ><span>feat: add elevenlabs cloud transcriber worker</span>
+                </li>
+                <li data-commit="3e82597c482059f37fc2403489c8dbce6ccf13f8">
+                  <a
+                    href="https://github.com/justyura/vox/commit/3e82597c482059f37fc2403489c8dbce6ccf13f8"
+                    target="_blank"
+                    rel="noopener"
+                    >3e82597 ↗</a
+                  ><time>2026-09-22</time
+                  ><span
+                    >feat: route transcription to short or long queue by audio
+                    duration</span
+                  >
+                </li>
+                <li data-commit="ec8b86c412d7515388ea353e4da2bbceac96525e">
+                  <a
+                    href="https://github.com/justyura/vox/commit/ec8b86c412d7515388ea353e4da2bbceac96525e"
+                    target="_blank"
+                    rel="noopener"
+                    >ec8b86c ↗</a
+                  ><time>2026-09-22</time
+                  ><span
+                    >chore: pass the short audio threshold to the task
+                    service</span
+                  >
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop" id="milestone-09">
+          <div class="history-date">
+            <time>2026.09.22—23</time><span>文件与任务清理</span>
+          </div>
+          <span class="history-marker">09</span>
+          <article>
+            <span class="history-state">已实现 · 有提交记录</span>
+            <h2>补上内容管理的退出路径。</h2>
+            <p>增加文件删除、关联任务及输出清理，再从 API 暴露完整删除入口。</p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>内容可以积累，也可以管理；原始文件与派生产物一起考虑。</p>
+            </div>
+            <details class="commit-evidence">
+              <summary>查看 3 条代表性提交 <span>＋</span></summary>
+              <ul>
+                <li data-commit="a72f25518dc65caf6f8ebce32ee925554a1de2bc">
+                  <code>a72f255</code><em>本地提交</em><time>2026-09-22</time
+                  ><span>feat: delete files from storage and metadata</span>
+                </li>
+                <li data-commit="27c90c25fb85f2274ba477c94c0e85f5a436c7fa">
+                  <code>27c90c2</code><em>本地提交</em><time>2026-09-23</time
+                  ><span
+                    >feat: delete a file&#x27;s tasks and their outputs</span
+                  >
+                </li>
+                <li data-commit="e3ab25153ea45dbc0150bacb99eeca5f340a4d65">
+                  <code>e3ab251</code><em>本地提交</em><time>2026-09-23</time
+                  ><span>feat: add the delete file endpoint</span>
+                </li>
+              </ul>
+            </details>
+          </article>
+        </li>
+        <li class="history-stop current-stop">
+          <div class="history-date">
+            <time>当前工作区</time><span>前端体验迭代</span>
+          </div>
+          <span class="history-marker">10</span>
+          <article>
+            <span class="history-state">已在工作区实现 · 尚未提交</span>
+            <h2>把已有能力，组织成可演示的产品。</h2>
+            <p>
+              完善录音试听、播放恢复与字幕定位，调整字幕可读性；加入以性能公式为核心的价值页、可点击的架构图和这份演进路线。
+            </p>
+            <div class="history-value">
+              <span>带来的变化</span>
+              <p>
+                使用者可以完成录音、转写与回听，面试官可以沿着产品价值追到工程实现。
+              </p>
+            </div>
+            <p class="history-local">
+              此项来自当前前端工作区，不计入以上 Git 提交；本轮未修改后端。
+            </p>
+          </article>
+        </li>
+      </ol>
+      <section class="next-road">
+        <p class="eyebrow">NEXT / 建议的下一程</p>
+        <h2>用数据检验性能，<br />用工程补齐可靠性。</h2>
+        <p class="next-intro">下面是后续计划，尚未作为已实现能力展示。</p>
+        <div>
+          <article>
+            <span>01 / 性能基线</span>
+            <h3>让三个维度都可测。</h3>
+            <p>
+              固定样本与运行环境，记录 WER / CER、用户操作投入、端到端 P50 /
+              P95、吞吐与每项任务成本。
+            </p>
+          </article>
+          <article>
+            <span>02 / 可靠性</span>
+            <h3>把失败路径补完整。</h3>
+            <p>
+              继续完善幂等、失败重试、死信和数据库与消息的一致性，再验证备份恢复。
+            </p>
+          </article>
+          <article>
+            <span>03 / 扩展与运维</span>
+            <h3>让扩展能力经过验证。</h3>
+            <p>
+              对齐当前队列的 KEDA
+              示例，完成并发压测，补充配额、访问边界与监控告警。
+            </p>
+          </article>
+        </div>
+      </section>
+      <p class="roadmap-footnote">
+        路线图按代表性提交整理，阶段日期采用 Git
+        记录。没有远程分支记录的提交标为“本地提交”；提交记录说明代码演进，不代替线上部署或性能验收。
+      </p>
+      <section class="project-closing">
+        <div>
+          <p class="eyebrow">把演进与设计连起来看</p>
+          <h2>每一次调整，都回应一个问题。</h2>
+          <p>
+            回到整体架构，看现在的模块如何共同服务准确率、Productivity 与速度。
+          </p>
+        </div>
+        <a class="button-link" href="/design.html">查看交互架构图 →</a>
+      </section>
+      <footer class="project-footer">
+        <a href="/project.html">← 为什么做 Vox</a
+        ><a href="/design.html">如何实现 ↗</a
+        ><a href="#roadmap-title">回到顶部 ↑</a>
+      </footer>
+    </main>
+  </body>
+</html>

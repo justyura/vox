@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Vox 高性能语音平台：以准确率 × 效率 × 速度为设计主线，通过语音模型、可复用内容与异步处理，让音视频转写得准、使用省力、结果更快可用。"
+    />
+    <meta name="theme-color" content="#163e35" />
+    <title>Vox · 高性能语音平台</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/project.css" />
+    <link rel="stylesheet" href="/value.css" />
+  </head>
+  <body class="project-page meaning-page">
+    <a class="skip-link" href="#project-main">跳到产品理念</a>
+    <header class="project-header">
+      <a class="brand" href="/" aria-label="Vox 工作台"
+        ><i aria-hidden="true"
+          ><b style="height: 40%"></b><b style="height: 100%"></b
+          ><b style="height: 65%"></b><b style="height: 85%"></b></i
+        >Vox<span class="project-wordmark">PERFORMANCE BY DESIGN</span></a
+      >
+      <nav aria-label="项目介绍导航">
+        <a href="/project.html" aria-current="page">为什么做</a
+        ><a href="/design.html">如何实现</a><a href="/roadmap.html">演进路线</a>
+      </nav>
+      <a href="/" class="button-link project-cta">进入工作台 ↗</a>
+    </header>
+    <main id="project-main" tabindex="-1">
+      <section class="value-hero" aria-labelledby="project-title">
+        <p class="eyebrow">VOX / 高性能语音平台</p>
+        <p class="performance-question">
+          一段声音，从输入到用上，完成得怎么样？
+        </p>
+        <h1 class="hero-equation" id="project-title">
+          <span class="equation-name">性能<small>PERFORMANCE</small></span
+          ><i aria-hidden="true">=</i
+          ><a href="#accuracy" class="equation-accuracy"
+            >准确率<small>ACCURACY</small></a
+          ><i aria-hidden="true">×</i
+          ><a href="#value" class="equation-productivity"
+            >效率<small>PRODUCTIVITY</small></a
+          ><i aria-hidden="true">×</i
+          ><a href="#speed" class="equation-speed">速度<small>SPEED</small></a>
+        </h1>
+        <p class="equation-description">
+          识别得准，让一次投入产生更多价值，并更快用上结果。
+        </p>
+        <div class="equation-intents">
+          <a href="#accuracy"><b>01</b> 内容是否可靠 <span>↓</span></a
+          ><a href="#value"><b>02</b> 产出是否值得投入 <span>↓</span></a
+          ><a href="#speed"><b>03</b> 获得结果要等多久 <span>↓</span></a>
+        </div>
+        <div class="value-hero-actions">
+          <a class="button-link project-cta" href="/">体验录音与转写 ↗</a
+          ><a class="quiet-link" href="/design.html">看整体架构 →</a>
+        </div>
+      </section>
+      <section
+        class="value-chapter accuracy-chapter"
+        id="accuracy"
+        aria-labelledby="accuracy-title"
+      >
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">01 / ACCURACY · 准确率</p>
+            <h2 id="accuracy-title">识别能力有来源，<br />关键内容可核对。</h2>
+          </div>
+          <p>从模型、输入和时间戳三个环节，<br />让文字与真实声音保持联系。</p>
+        </div>
+        <div class="accuracy-layout">
+          <div class="model-board">
+            <div class="model-input">
+              音频 / 视频 <span>→</span> 16 kHz 单声道 WAV
+            </div>
+            <div class="model-choices">
+              <div>
+                <small>云端识别</small><strong>ElevenLabs</strong
+                ><span>Scribe v2</span>
+              </div>
+              <div>
+                <small>本地识别</small><strong>Whisper</strong
+                ><span>whisper.cpp</span>
+              </div>
+            </div>
+            <div class="model-output">
+              统一结果 <span>正文 + 段落时间戳</span>
+            </div>
+            <div class="source-loop">
+              <span>原始声音</span><b>↔</b><span>按句回听</span><b>↔</b
+              ><span>转写正文</span>
+            </div>
+          </div>
+          <div class="value-explanations">
+            <article>
+              <span>01</span>
+              <div>
+                <h3>让语音模型承担识别。</h3>
+                <p>
+                  本地与云端转写共用接口，支持指定语言或自动识别。不同引擎的结果进入同一套阅读与回听流程。
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>把媒体准备好，再交给模型。</h3>
+                <p>
+                  ffmpeg
+                  统一采样率与声道，减少输入格式差异造成的处理问题，让录音与视频都能进入流程。
+                </p>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>时间戳要能真正定位到那句话。</h3>
+                <p>
+                  本地转写读取真实 segment
+                  时间；云端逐词时间合并为句段。用户点击正文，可以回到原声核对。
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="chapter-footer">
+          <p>识别质量取决于具体模型、语言和录音条件；回听提供核对依据。</p>
+          <a href="/design.html#accuracy-design">在架构图中看准确率 →</a>
+        </div>
+      </section>
+      <section
+        class="value-chapter productivity-chapter"
+        id="value"
+        aria-labelledby="value-title"
+      >
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">02 / PRODUCTIVITY · 效率</p>
+            <h2 id="value-title">一次输入，<br />产出可以反复使用。</h2>
+          </div>
+          <div class="productivity-ratio">
+            <span>Productivity</span><strong>有效产出 <i>÷</i> 用户投入</strong
+            ><small>少整理、少切换、少重复处理。</small>
+          </div>
+        </div>
+        <div class="output-flow">
+          <div class="single-input">
+            <span>INPUT</span><strong>录制 / 上传</strong>
+            <p>录音可先试听，确认后提交。<br />后台自动衔接转码与转写。</p>
+          </div>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <div class="useful-outputs">
+            <article>
+              <span>01</span>
+              <h3>转写稿</h3>
+              <p>浏览、复制，理解内容。</p>
+            </article>
+            <article>
+              <span>02</span>
+              <h3>定位回听</h3>
+              <p>按句找到原声与上下文。</p>
+            </article>
+            <article>
+              <span>03</span>
+              <h3>生词候选</h3>
+              <p>英文词汇提取与释义。</p>
+            </article>
+            <article>
+              <span>04</span>
+              <h3>TXT / SRT</h3>
+              <p>把文字和带时间戳的字幕带走。</p>
+            </article>
+            <article>
+              <span>05</span>
+              <h3>历史内容库</h3>
+              <p>下次找回，继续阅读与回听。</p>
+            </article>
+          </div>
+        </div>
+        <div class="reuse-line">
+          <b>↺</b>
+          <p>
+            原始文件与结果关联保存。按名称或 ID
+            找回，让同一份输入服务下一次学习和工作；不再需要时，也可以管理和删除。
+          </p>
+        </div>
+        <div class="chapter-footer">
+          <p>产出看真正完成的任务，投入看操作、注意力与整理成本。</p>
+          <a href="/design.html#productivity-design"
+            >在架构图中看 Productivity →</a
+          >
+        </div>
+      </section>
+      <section
+        class="value-chapter speed-chapter"
+        id="speed"
+        aria-labelledby="speed-title"
+      >
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">03 / SPEED · 速度</p>
+            <h2 id="speed-title">不同的任务，<br />走适合它们的处理路径。</h2>
+          </div>
+          <p>从传输、排队到计算，<br />把等待拆开，才能针对瓶颈优化。</p>
+        </div>
+        <div class="routing-board">
+          <div class="routing-start">
+            <span>共同准备</span><strong>上传 → 转码</strong
+            ><small>标准音轨 · 按时长分流</small>
+          </div>
+          <div class="routing-branches">
+            <div class="route-lane">
+              <span class="route-time">≤ 10 分钟</span>
+              <div>
+                <strong>短转写队列</strong><small>transcribe-short</small>
+              </div>
+              <b>→</b>
+              <div>
+                <strong>云端 worker</strong
+                ><small>ElevenLabs · Scribe v2</small>
+              </div>
+            </div>
+            <div class="route-lane">
+              <span class="route-time">&gt; 10 分钟</span>
+              <div>
+                <strong>长转写队列</strong><small>transcribe-long</small>
+              </div>
+              <b>→</b>
+              <div><strong>本地 worker</strong><small>whisper.cpp</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="speed-decisions">
+          <article>
+            <span>01 / 排队</span>
+            <h3>让长短转写分别排队。</h3>
+            <p>
+              独立队列与消费者，让短任务无需与长转写争用同一队列。转码与存储仍是共享环节，阈值可配置。
+            </p>
+          </article>
+          <article>
+            <span>02 / 模型与计算</span>
+            <h3>模型常驻，轻量起步。</h3>
+            <p>
+              本地模型在 worker 启动时加载，后续任务复用。镜像默认 Tiny，通过
+              MODEL_PATH 可换模型，按质量与耗时选择配置。
+            </p>
+            <a
+              href="https://github.com/openai/whisper#available-models-and-languages"
+              target="_blank"
+              rel="noopener"
+              >模型的速度与准确率取舍 ↗</a
+            >
+          </article>
+          <article>
+            <span>03 / 资源与成本</span>
+            <h3>云端与本地分工，控制调用量。</h3>
+            <p>
+              长音频在本地处理，减少长录音的云端调用量。哪类任务积压，就增加哪类
+              worker；同时评估本地资源与总成本。
+            </p>
+          </article>
+          <article>
+            <span>04 / 传输与使用</span>
+            <h3>文件直达存储，结果独立加载。</h3>
+            <p>
+              媒体字节不绕经 API
+              网关。前端分别加载播放器、转写稿与生词，已就绪的内容可以先用，点击句子就能回听。
+            </p>
+          </article>
+        </div>
+        <div class="chapter-footer">
+          <p>
+            以上是已实现的机制；实际加速和节省幅度，需要在相同样本、硬件与并发下测量。
+          </p>
+          <a href="/design.html#speed-design">在架构图中看速度 →</a>
+        </div>
+      </section>
+      <section
+        class="project-section inspiration-section"
+        id="inspiration"
+        aria-labelledby="inspiration-title"
+      >
+        <div>
+          <p class="eyebrow">从 EFFICIENT GO 得到的启发</p>
+          <h2 id="inspiration-title">先定义目标，<br />再用数据检验设计。</h2>
+        </div>
+        <div class="inspiration-copy">
+          <p>
+            设计灵感来自 Bartłomiej Płotka 的
+            <a
+              href="https://www.oreilly.com/library/view/efficient-go/9781098105709/"
+              target="_blank"
+              rel="noopener"
+              >《Efficient Go: Data-Driven Performance Optimization》↗</a
+            >。把性能落到可观察的目标上，再寻找值得优化的环节。
+          </p>
+          <p>
+            Vox 用 Accuracy × Productivity × Speed
+            表达产品目标：识别质量、产出与投入、端到端耗时。架构服务于这些目标，Git
+            历史记录每一步选择。
+          </p>
+          <p class="inspiration-attribution">
+            公式表达三者共同影响体验；具体评估分别记录字词错误率、使用投入与处理时延。
+          </p>
+        </div>
+      </section>
+      <section class="project-closing" id="engineering">
+        <div>
+          <p class="eyebrow">从第一段录音，到完整的平台</p>
+          <h2>每一项能力，都有它的来路。</h2>
+          <p>
+            沿着真实提交，看模型、服务拆分、队列和学习体验怎样一步步长出来。
+          </p>
+        </div>
+        <a class="button-link" href="/roadmap.html">查看演进路线 →</a>
+      </section>
+      <footer class="project-footer">
+        <span>Vox · 高性能语音平台</span><a href="/design.html">如何实现 ↗</a
+        ><a
+          href="https://github.com/justyura/vox"
+          target="_blank"
+          rel="noopener"
+          >项目源码 ↗</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

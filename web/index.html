@@ -3,107 +3,348 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Vox：把音频和视频变成可以阅读、跳转和学习的文字。" />
-    <title>Vox</title>
+    <meta
+      name="description"
+      content="Vox：把音频和视频变成可以阅读、跳转和学习的文字。"
+    />
+    <meta name="theme-color" content="#163e35" />
+    <title>Vox · 声音转写工作台</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script src="/media.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
     <!-- sign in -->
     <section id="auth" class="auth" hidden>
+      <div class="auth-story">
+        <div class="eyebrow">VOX / LISTEN. READ. REVISIT.</div>
+        <h1>让声音，<br />成为可以回看的文字。</h1>
+        <p>
+          一段访谈、一堂课、一个刚刚出现的想法。<br />录下来，转成文字，随时回到那一句。
+        </p>
+        <div class="sound-art" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
+          ><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i
+          ><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="auth-features">
+          <span>01 录制或上传</span><span>02 自动转写</span
+          ><span>03 按句回听</span>
+        </div>
+      </div>
       <form id="auth-form">
-        <div class="brand"><i aria-hidden="true"><b style="height: 40%"></b><b style="height: 100%"></b><b style="height: 65%"></b><b style="height: 85%"></b></i>Vox</div>
-        <h1 id="auth-title">登录</h1>
-        <label>邮箱<input name="email" type="email" autocomplete="email" required /></label>
-        <label>密码<input name="password" type="password" autocomplete="current-password" required /></label>
+        <div class="brand">
+          <i aria-hidden="true"
+            ><b style="height: 40%"></b><b style="height: 100%"></b
+            ><b style="height: 65%"></b><b style="height: 85%"></b></i
+          >Vox
+        </div>
+        <h2 id="auth-title">登录</h2>
+        <p class="auth-intro">进入你的声音工作台。</p>
+        <label
+          >邮箱<input name="email" type="email" autocomplete="email" required
+        /></label>
+        <label
+          >密码<input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+        /></label>
         <button id="auth-submit" class="primary" type="submit">登录</button>
         <p id="auth-msg" class="msg" role="status"></p>
-        <p class="switch"><span id="auth-switch-text">还没有账号？</span> <button type="button" id="auth-switch">注册</button></p>
+        <a class="auth-project-link" href="/project.html"
+          >先了解 Vox：准确率 × 效率 × 速度 ↗</a
+        >
+        <p class="switch">
+          <span id="auth-switch-text">还没有账号？</span>
+          <button type="button" id="auth-switch">注册</button>
+        </p>
       </form>
     </section>
 
     <div id="app" class="app" hidden>
       <aside class="side">
-        <a class="brand" href="#/"><i aria-hidden="true"><b style="height: 40%"></b><b style="height: 100%"></b><b style="height: 65%"></b><b style="height: 85%"></b></i>Vox</a>
+        <a class="brand" href="#/"
+          ><i aria-hidden="true"
+            ><b style="height: 40%"></b><b style="height: 100%"></b
+            ><b style="height: 65%"></b><b style="height: 85%"></b></i
+          >Vox</a
+        >
+        <div class="side-label">声音的工作空间</div>
         <nav class="nav" aria-label="主导航">
-          <a href="#/" data-nav="home">转写 <span class="count" id="count-tasks"></span></a>
-          <a href="#/files" data-nav="files">文件库 <span class="count" id="count-files"></span></a>
-          <a href="#/about" data-nav="about">关于</a>
-          <a href="#/faq" data-nav="faq">问答</a>
+          <a href="/project.html"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">✧</span> 为什么是
+              Vox</span
+            ></a
+          >
+          <a href="#/" data-nav="home"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">▤</span> 工作台</span
+            >
+            <span class="count" id="count-tasks"></span
+          ></a>
+          <a href="#/files" data-nav="files"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">▱</span> 文件库</span
+            >
+            <span class="count" id="count-files"></span
+          ></a>
+          <a href="/design.html"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">◇</span>
+              设计与架构</span
+            ></a
+          >
+          <a href="/roadmap.html"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">↗</span>
+              演进路线</span
+            ></a
+          >
+          <a href="#/faq" data-nav="faq"
+            ><span
+              ><span class="nav-icon" aria-hidden="true">?</span> 使用帮助</span
+            ></a
+          >
         </nav>
-        <div class="who"><span id="account"></span><br /><button id="logout">退出登录</button></div>
+        <a class="side-project" href="/project.html"
+          ><span class="eyebrow">BEHIND VOX</span
+          ><strong>高性能语音平台，<br />准确、省力、更快。</strong
+          ><span>了解项目价值 ↗</span></a
+        >
+        <div class="who">
+          <span id="account"></span><br /><button id="logout">退出登录</button>
+        </div>
       </aside>
 
-      <main>
-        <!-- home: upload + transcriptions -->
+      <main id="main-content" tabindex="-1">
+        <div class="topbar">
+          <span
+            >个人工作空间 <span class="topbar-divider">/</span> Vox Studio</span
+          ><span class="sync"
+            ><i></i><span id="sync-label">正在连接</span></span
+          >
+        </div>
+        <div id="list-error" class="notice" role="status" hidden>
+          <span id="list-error-text"></span
+          ><button id="list-retry">重试</button>
+        </div>
         <section id="view-home" hidden>
-          <h1>你的转写</h1>
-          <p class="sub">把音频或视频放进来，剩下的交给 Vox。</p>
-          <div class="drop" id="drop">
-            <div class="big">拖入音频或视频</div>
-            <div class="hint">放下就开始转写 · mp3 / m4a / wav / mp4 / mov / mkv 都可以</div>
-            <div class="row" id="pick-row">
-              <button class="primary" id="pick">选择文件</button>
-              <button id="rec-start">● 录音</button>
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">YOUR VOICE, IN WORDS</div>
+              <h1>从声音，到文字。</h1>
+              <p class="sub">记录当下的想法，找回每一句值得留下的话。</p>
             </div>
-            <div class="rec" id="rec" hidden>
-              <span class="dot" aria-hidden="true"></span>
-              <span id="rec-time">00:00</span>
-              <button class="primary" id="rec-stop">停止并转写</button>
-              <button class="ghost" id="rec-cancel">放弃</button>
+            <span class="workspace-tag">音频 · 视频 · 灵感</span>
+          </div>
+          <div class="create-panel" id="drop">
+            <div class="upload-pane">
+              <div class="eyebrow">01 / 导入声音</div>
+              <div class="upload-symbol" aria-hidden="true">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5" />
+                </svg>
+              </div>
+              <h2>把文件放在这里</h2>
+              <p>拖入音频或视频，让 Vox 整理成文字。</p>
+              <button class="primary" id="pick">＋ 选择文件</button>
+              <span class="format-note">MP3 / M4A / WAV / MP4 / MOV 等</span>
+              <input
+                id="file-input"
+                type="file"
+                accept="audio/*,video/*,.mkv,.mov,.m4a,.ogg,.webm"
+                hidden
+              />
             </div>
-            <label class="lang" for="language">语言：<select id="language">
-                <option value="auto">自动识别</option>
-                <option value="zh">中文</option>
-                <option value="en">English</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="es">Español</option>
-              </select></label>
-            <p class="msg" id="upload-msg" role="status"></p>
-            <input id="file-input" type="file" accept="audio/*,video/*" hidden />
+            <div class="record-pane">
+              <div class="eyebrow">或者 / 直接录制</div>
+              <div class="record-icon" aria-hidden="true">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <rect x="9" y="2" width="6" height="13" rx="3" />
+                  <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8" />
+                </svg>
+              </div>
+              <h2>想法，现在就录下来</h2>
+              <p>停止后先试听，确认再转写。</p>
+              <button id="rec-start">● 开始录音</button>
+              <div class="rec" id="rec" hidden>
+                <div class="rec-status">
+                  <span class="dot" aria-hidden="true"></span
+                  ><span id="rec-label">正在录音</span
+                  ><strong id="rec-time">0:00</strong>
+                </div>
+                <meter
+                  id="rec-meter"
+                  min="0"
+                  max="100"
+                  value="0"
+                  aria-label="麦克风音量"
+                ></meter>
+                <div class="row">
+                  <button class="primary" id="rec-stop">■ 停止并试听</button
+                  ><button class="ghost" id="rec-cancel">放弃</button>
+                </div>
+              </div>
+              <div id="rec-draft" hidden>
+                <audio
+                  id="rec-preview"
+                  controls
+                  preload="metadata"
+                  aria-label="录音试听"
+                ></audio>
+                <div class="row">
+                  <button class="primary" id="rec-submit">开始转写 →</button
+                  ><button id="rec-redo">重录</button
+                  ><button class="ghost" id="rec-clear">删除</button>
+                </div>
+              </div>
+              <span class="format-note">仅保存在本页 · 最长 30 分钟</span>
+            </div>
+            <div class="create-footer">
+              <label class="lang" for="language"
+                >识别语言
+                <select id="language">
+                  <option value="auto">自动识别</option>
+                  <option value="zh">中文</option>
+                  <option value="en">English</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                  <option value="fr">Français</option>
+                  <option value="de">Deutsch</option>
+                  <option value="es">Español</option>
+                </select></label
+              ><span>上传后自动转写 · 录音试听后提交</span>
+            </div>
+          </div>
+          <p class="msg upload-message" id="upload-msg" role="status"></p>
+          <div class="library-heading">
+            <h2>你的转写 <span id="stat-total">0</span></h2>
+            <div class="library-stats">
+              <span><b id="stat-complete">0</b> 已完成</span
+              ><span><b id="stat-active">0</b> 处理中</span
+              ><button id="refresh" class="ghost" aria-label="刷新列表">
+                ↻ 刷新
+              </button>
+            </div>
+          </div>
+          <div class="list-toolbar">
+            <label class="search-field"
+              ><span aria-hidden="true">⌕</span
+              ><input
+                id="tasks-search"
+                type="search"
+                placeholder="搜索文件名称或任务 ID"
+                aria-label="搜索转写" /></label
+            ><select id="task-status" aria-label="按任务状态筛选">
+              <option value="all">全部状态</option>
+              <option value="active">处理中</option>
+              <option value="completed">已完成</option>
+              <option value="failed">失败</option>
+            </select>
           </div>
           <div class="list" id="task-list"></div>
-          <p class="note">进度条四段对应处理流程：上传 → 转码 → 转写 → 完成。斜纹表示在队列里等待，流动的绿色表示正在处理。</p>
+          <div class="pagination" id="tasks-pages"></div>
+          <p class="note">
+            上传 → 转码 → 转写 →
+            完成。处理中的任务会自动更新，完成后点击即可阅读和回听。
+          </p>
         </section>
 
-        <!-- file library: source media only -->
         <section id="view-files" hidden>
+          <div class="eyebrow">YOUR MEDIA LIBRARY</div>
           <h1>文件库</h1>
-          <p class="sub">你上传过的原始音视频。转码中间产物和结果文件不在这里显示。</p>
+          <p class="sub">保存过的声音和影像，都在这里。</p>
+          <div class="list-toolbar">
+            <label class="search-field"
+              ><span aria-hidden="true">⌕</span
+              ><input
+                id="files-search"
+                type="search"
+                placeholder="搜索文件名称或 ID"
+                aria-label="搜索文件" /></label
+            ><a href="#/" class="button-link">＋ 新建转写</a>
+          </div>
           <div class="list" id="file-list"></div>
+          <div class="pagination" id="files-pages"></div>
         </section>
 
-        <!-- reader -->
         <section id="view-read" hidden>
+          <a href="#/" class="reader-back" id="read-back">← 返回工作台</a>
           <div class="rhead">
-            <a href="#/" class="ghost" id="read-back">← 返回</a>
-            <h1 id="read-title"></h1>
+            <div class="reader-title">
+              <div class="eyebrow">TRANSCRIPT / 转写阅读</div>
+              <h1 id="read-title"></h1>
+              <p id="read-meta" class="sub"></p>
+            </div>
             <div class="menu">
-              <button id="more" aria-haspopup="menu" aria-expanded="false">⋯ 更多</button>
+              <button id="more" aria-haspopup="menu" aria-expanded="false">
+                导出与更多 ↓
+              </button>
               <div class="menu-pop" id="menu" role="menu" hidden>
-                <button role="menuitem" data-menu="srt">下载字幕（SRT）</button>
-                <button role="menuitem" data-menu="txt">下载文本</button>
-                <button role="menuitem" data-menu="copy">复制全文</button>
-                <button role="menuitem" data-menu="source">打开原始文件</button>
+                <button role="menuitem" data-menu="srt">下载字幕（SRT）</button
+                ><button role="menuitem" data-menu="txt">下载文本</button
+                ><button role="menuitem" data-menu="copy">复制全文</button
+                ><button role="menuitem" data-menu="source">
+                  打开原始文件
+                </button>
                 <hr />
-                <button role="menuitem" data-menu="tech">技术信息</button>
+                <button role="menuitem" data-menu="tech">技术信息</button
+                ><button role="menuitem" data-menu="delete" class="danger">
+                  删除这次上传
+                </button>
               </div>
             </div>
           </div>
           <div class="reader">
-            <div>
+            <div class="reader-main">
+              <label class="track-switch" id="track-switch" hidden
+                >播放来源
+                <select id="media-source" aria-label="播放来源">
+                  <option value="original">原始媒体</option>
+                  <option value="processed">转写音轨（兼容模式）</option>
+                </select></label
+              >
               <div id="stage-slot"></div>
-              <div class="tscript-wrap">
-                <div class="tscript" id="tscript" tabindex="0" aria-label="转写正文"></div>
-                <button class="backnow" id="backnow" hidden>回到当前</button>
-              </div>
+              <section class="transcript-panel">
+                <header class="panel-heading">
+                  <h2>转写正文 <span id="segment-count"></span></h2>
+                  <span>点击任意一句回听</span>
+                  <button class="backnow" id="backnow" hidden>
+                    ↓ 回到当前播放
+                  </button>
+                </header>
+                <div class="tscript-wrap">
+                  <div
+                    class="tscript"
+                    id="tscript"
+                    tabindex="0"
+                    aria-label="转写正文"
+                  ></div>
+                </div>
+              </section>
             </div>
             <aside class="words" id="words">
-              <h2>生词 <span id="words-count"></span></h2>
-              <p class="hint">按出现次数排序；当前这句里的词会高亮。</p>
+              <div class="eyebrow">LEARN AS YOU LISTEN</div>
+              <h2>生词笔记 <span id="words-count"></span></h2>
+              <p class="hint">从英文转写中提取，按出现次数排序。</p>
               <ul id="words-list"></ul>
             </aside>
           </div>
@@ -111,123 +352,576 @@
 
         <!-- about -->
         <section id="view-about" class="prose" hidden>
-          <h1>关于 Vox</h1>
-          <p class="lede">Vox 把一段音频或视频变成可以阅读、可以跳转、可以学习的文字：上传之后自动转码和转写，按句子对齐时间戳，再把文中的生词标出来。</p>
+          <h1>系统架构</h1>
+          <p class="sub">
+            先看
+            <a href="/design.html">产品设计、架构与取舍 ↗</a
+            >，或继续深入这条处理链路。
+          </p>
+          <p class="lede">
+            Vox
+            把一段音频或视频变成可以阅读、可以跳转、可以学习的文字：上传之后自动转码和转写，按句子对齐时间戳，再把文中的生词标出来。
+          </p>
           <h2>系统架构</h2>
           <figure class="arch">
-            <svg viewBox="0 0 960 520" role="img" aria-label="Vox 架构：浏览器经 nginx 访问 API 网关和生词服务；网关通过 gRPC 调用文件服务和任务服务；任务服务把任务派发到 RabbitMQ，再由转码 worker、云端转写 worker 和 Mac 上的本地转写 worker 消费；文件字节不经过后端服务，浏览器和 worker 直接读写对象存储。">
-          <defs>
-            <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
-            <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--green)"/></marker>
-          </defs>
+            <svg
+              viewBox="0 0 960 520"
+              role="img"
+              aria-label="Vox 架构：浏览器经 nginx 访问 API 网关和生词服务；网关通过 gRPC 调用文件服务和任务服务；任务服务把任务派发到 RabbitMQ，再由转码 worker、云端转写 worker 和 Mac 上的本地转写 worker 消费；文件字节不经过后端服务，浏览器和 worker 直接读写对象存储。"
+            >
+              <defs>
+                <marker
+                  id="ar"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor" />
+                </marker>
+                <marker
+                  id="arg"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" style="fill: var(--green)" />
+                </marker>
+              </defs>
 
-                    <rect x="172" y="34" width="772" height="356" rx="14" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-dasharray="5 5"/>
-          <text x="186" y="54" font-size="12" fill="currentColor" fill-opacity=".6">德国服务器 de · Docker Compose</text>
-          <rect x="740" y="404" width="204" height="100" rx="14" fill="none" stroke="currentColor" stroke-opacity=".28" stroke-dasharray="5 5"/>
-          <text x="754" y="424" font-size="12" fill="currentColor" fill-opacity=".6">你的 Mac · Metal GPU</text>
+              <rect
+                x="172"
+                y="34"
+                width="772"
+                height="356"
+                rx="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-opacity=".28"
+                stroke-dasharray="5 5"
+              />
+              <text
+                x="186"
+                y="54"
+                font-size="12"
+                fill="currentColor"
+                fill-opacity=".6"
+              >
+                德国服务器 de · Docker Compose
+              </text>
+              <rect
+                x="740"
+                y="404"
+                width="204"
+                height="100"
+                rx="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-opacity=".28"
+                stroke-dasharray="5 5"
+              />
+              <text
+                x="754"
+                y="424"
+                font-size="12"
+                fill="currentColor"
+                fill-opacity=".6"
+              >
+                你的 Mac · Metal GPU
+              </text>
 
-                    <path d="M70,226 V16 H825 V58" fill="none" style="stroke:var(--green)" stroke-width="2.5" marker-end="url(#arg)"/>
-          <text x="440" y="12" font-size="12" text-anchor="middle" style="fill:var(--green)">浏览器直传 / 播放文件（预签名 URL）</text>
-          <path d="M890,82 H918 V452 H892 M918,252 H892 M918,342 H892" fill="none" style="stroke:var(--green)" stroke-width="2.5"/>
-          <text x="934" y="270" font-size="12" text-anchor="middle" style="fill:var(--green)" transform="rotate(90 934 270)">worker 读写文件</text>
+              <path
+                d="M70,226 V16 H825 V58"
+                fill="none"
+                style="stroke: var(--green)"
+                stroke-width="2.5"
+                marker-end="url(#arg)"
+              />
+              <text
+                x="440"
+                y="12"
+                font-size="12"
+                text-anchor="middle"
+                style="fill: var(--green)"
+              >
+                浏览器直传 / 播放文件（预签名 URL）
+              </text>
+              <path
+                d="M890,82 H918 V452 H892 M918,252 H892 M918,342 H892"
+                fill="none"
+                style="stroke: var(--green)"
+                stroke-width="2.5"
+              />
+              <text
+                x="934"
+                y="270"
+                font-size="12"
+                text-anchor="middle"
+                style="fill: var(--green)"
+                transform="rotate(90 934 270)"
+              >
+                worker 读写文件
+              </text>
 
-                    <g stroke="currentColor" stroke-opacity=".55" stroke-width="1.4" fill="none">
-            <line x1="130" y1="248" x2="183" y2="248" marker-end="url(#ar)"/>
-            <line x1="315" y1="240" x2="358" y2="180" marker-end="url(#ar)"/>
-            <line x1="315" y1="258" x2="358" y2="338" marker-end="url(#ar)"/>
-            <line x1="490" y1="162" x2="538" y2="96" marker-end="url(#ar)"/>
-            <line x1="490" y1="180" x2="538" y2="214" marker-end="url(#ar)"/>
-            <line x1="605" y1="198" x2="605" y2="108" marker-end="url(#ar)"/>
-            <line x1="605" y1="246" x2="605" y2="326" marker-end="url(#ar)"/>
-            <line x1="670" y1="82" x2="758" y2="82" marker-end="url(#ar)"/>
-            <line x1="670" y1="342" x2="758" y2="256" marker-end="url(#ar)"/>
-            <line x1="670" y1="352" x2="758" y2="344" marker-end="url(#ar)"/>
-            <line x1="670" y1="362" x2="758" y2="448" marker-end="url(#ar)"/>
-          </g>
-          <g font-size="11" fill="currentColor" fill-opacity=".7">
-            <text x="156" y="241" text-anchor="middle">HTTP</text>
-            <text x="318" y="200">/api/</text>
-            <text x="318" y="312">/vocab/</text>
-            <text x="498" y="120">gRPC</text>
-            <text x="498" y="212">gRPC</text>
-            <text x="612" y="158">申请签名 URL</text>
-            <text x="612" y="292">派发任务</text>
-            <text x="714" y="74" text-anchor="middle">签名</text>
-            <text x="700" y="290">transcode</text>
-            <text x="686" y="340">transcribe-short</text>
-            <text x="690" y="420">transcribe-long · 经 SSH 隧道</text>
-          </g>
+              <g
+                stroke="currentColor"
+                stroke-opacity=".55"
+                stroke-width="1.4"
+                fill="none"
+              >
+                <line
+                  x1="130"
+                  y1="248"
+                  x2="183"
+                  y2="248"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="315"
+                  y1="240"
+                  x2="358"
+                  y2="180"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="315"
+                  y1="258"
+                  x2="358"
+                  y2="338"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="490"
+                  y1="162"
+                  x2="538"
+                  y2="96"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="490"
+                  y1="180"
+                  x2="538"
+                  y2="214"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="605"
+                  y1="198"
+                  x2="605"
+                  y2="108"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="605"
+                  y1="246"
+                  x2="605"
+                  y2="326"
+                  marker-end="url(#ar)"
+                />
+                <line x1="670" y1="82" x2="758" y2="82" marker-end="url(#ar)" />
+                <line
+                  x1="670"
+                  y1="342"
+                  x2="758"
+                  y2="256"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="670"
+                  y1="352"
+                  x2="758"
+                  y2="344"
+                  marker-end="url(#ar)"
+                />
+                <line
+                  x1="670"
+                  y1="362"
+                  x2="758"
+                  y2="448"
+                  marker-end="url(#ar)"
+                />
+              </g>
+              <g font-size="11" fill="currentColor" fill-opacity=".7">
+                <text x="156" y="241" text-anchor="middle">HTTP</text>
+                <text x="318" y="200">/api/</text>
+                <text x="318" y="312">/vocab/</text>
+                <text x="498" y="120">gRPC</text>
+                <text x="498" y="212">gRPC</text>
+                <text x="612" y="158">申请签名 URL</text>
+                <text x="612" y="292">派发任务</text>
+                <text x="714" y="74" text-anchor="middle">签名</text>
+                <text x="700" y="290">transcode</text>
+                <text x="686" y="340">transcribe-short</text>
+                <text x="690" y="420">transcribe-long · 经 SSH 隧道</text>
+              </g>
 
-                    <g font-size="13" fill="currentColor">
-            <rect x="10" y="226" width="120" height="44" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-            <text x="70" y="253" text-anchor="middle" font-weight="600">浏览器</text>
-            <g>
-              <rect x="185" y="226" width="130" height="44" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="250" y="246" text-anchor="middle" font-weight="600">web · nginx</text>
-              <text x="250" y="259" text-anchor="middle" font-size="11" fill-opacity=".6">静态页面 + 反向代理</text>
-            </g>
-            <g>
-              <rect x="360" y="148" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="425" y="168" text-anchor="middle" font-weight="600">01 API 网关</text>
-              <text x="425" y="185" text-anchor="middle" font-size="11" fill-opacity=".6">Gin · JWT · userdb</text>
-            </g>
-            <g>
-              <rect x="360" y="326" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="425" y="346" text-anchor="middle" font-weight="600">05 生词服务</text>
-              <text x="425" y="363" text-anchor="middle" font-size="11" fill-opacity=".6">HTTP · ECDICT · 无状态</text>
-            </g>
-            <g>
-              <rect x="540" y="60" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="605" y="80" text-anchor="middle" font-weight="600">02 文件服务</text>
-              <text x="605" y="97" text-anchor="middle" font-size="11" fill-opacity=".6">gRPC · filedb</text>
-            </g>
-            <g>
-              <rect x="540" y="198" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="605" y="218" text-anchor="middle" font-weight="600">03 任务服务</text>
-              <text x="605" y="235" text-anchor="middle" font-size="11" fill-opacity=".6">gRPC · taskdb · 编排</text>
-            </g>
-            <g>
-              <rect x="540" y="326" width="130" height="48" rx="8" style="fill:var(--pale)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="605" y="346" text-anchor="middle" font-weight="600">RabbitMQ</text>
-              <text x="605" y="363" text-anchor="middle" font-size="11" fill-opacity=".6">exchange vox.tasks</text>
-            </g>
-            <g>
-              <rect x="760" y="58" width="130" height="48" rx="8" style="fill:var(--surface);stroke:var(--green)"/>
-              <text x="825" y="78" text-anchor="middle" font-weight="600">MinIO</text>
-              <text x="825" y="95" text-anchor="middle" font-size="11" fill-opacity=".6">对象存储 · 150G</text>
-            </g>
-            <g>
-              <rect x="760" y="230" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="825" y="250" text-anchor="middle" font-weight="600">06 转码 worker</text>
-              <text x="825" y="267" text-anchor="middle" font-size="11" fill-opacity=".6">ffmpeg → 16kHz WAV</text>
-            </g>
-            <g>
-              <rect x="760" y="320" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="825" y="340" text-anchor="middle" font-weight="600">04 云端转写</text>
-              <text x="825" y="357" text-anchor="middle" font-size="11" fill-opacity=".6">→ ElevenLabs API</text>
-            </g>
-            <g>
-              <rect x="760" y="430" width="130" height="48" rx="8" style="fill:var(--surface)" stroke="currentColor" stroke-opacity=".5"/>
-              <text x="825" y="450" text-anchor="middle" font-weight="600">04 本地转写</text>
-              <text x="825" y="467" text-anchor="middle" font-size="11" fill-opacity=".6">whisper.cpp · large-v3</text>
-            </g>
-          </g>
+              <g font-size="13" fill="currentColor">
+                <rect
+                  x="10"
+                  y="226"
+                  width="120"
+                  height="44"
+                  rx="8"
+                  style="fill: var(--surface)"
+                  stroke="currentColor"
+                  stroke-opacity=".5"
+                />
+                <text x="70" y="253" text-anchor="middle" font-weight="600">
+                  浏览器
+                </text>
+                <g>
+                  <rect
+                    x="185"
+                    y="226"
+                    width="130"
+                    height="44"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="250" y="246" text-anchor="middle" font-weight="600">
+                    web · nginx
+                  </text>
+                  <text
+                    x="250"
+                    y="259"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    静态页面 + 反向代理
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="360"
+                    y="148"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="425" y="168" text-anchor="middle" font-weight="600">
+                    01 API 网关
+                  </text>
+                  <text
+                    x="425"
+                    y="185"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    Gin · JWT · userdb
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="360"
+                    y="326"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="425" y="346" text-anchor="middle" font-weight="600">
+                    05 生词服务
+                  </text>
+                  <text
+                    x="425"
+                    y="363"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    HTTP · ECDICT · 无状态
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="540"
+                    y="60"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="605" y="80" text-anchor="middle" font-weight="600">
+                    02 文件服务
+                  </text>
+                  <text
+                    x="605"
+                    y="97"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    gRPC · filedb
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="540"
+                    y="198"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="605" y="218" text-anchor="middle" font-weight="600">
+                    03 任务服务
+                  </text>
+                  <text
+                    x="605"
+                    y="235"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    gRPC · taskdb · 编排
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="540"
+                    y="326"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--pale)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="605" y="346" text-anchor="middle" font-weight="600">
+                    RabbitMQ
+                  </text>
+                  <text
+                    x="605"
+                    y="363"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    exchange vox.tasks
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="760"
+                    y="58"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface); stroke: var(--green)"
+                  />
+                  <text x="825" y="78" text-anchor="middle" font-weight="600">
+                    MinIO
+                  </text>
+                  <text
+                    x="825"
+                    y="95"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    对象存储 · 150G
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="760"
+                    y="230"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="825" y="250" text-anchor="middle" font-weight="600">
+                    06 转码 worker
+                  </text>
+                  <text
+                    x="825"
+                    y="267"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    ffmpeg → 16kHz WAV
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="760"
+                    y="320"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="825" y="340" text-anchor="middle" font-weight="600">
+                    04 云端转写
+                  </text>
+                  <text
+                    x="825"
+                    y="357"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    → ElevenLabs API
+                  </text>
+                </g>
+                <g>
+                  <rect
+                    x="760"
+                    y="430"
+                    width="130"
+                    height="48"
+                    rx="8"
+                    style="fill: var(--surface)"
+                    stroke="currentColor"
+                    stroke-opacity=".5"
+                  />
+                  <text x="825" y="450" text-anchor="middle" font-weight="600">
+                    04 本地转写
+                  </text>
+                  <text
+                    x="825"
+                    y="467"
+                    text-anchor="middle"
+                    font-size="11"
+                    fill-opacity=".6"
+                  >
+                    whisper.cpp · large-v3
+                  </text>
+                </g>
+              </g>
 
-                    <g font-size="11" fill="currentColor" fill-opacity=".7">
-            <line x1="20" y1="470" x2="50" y2="470" style="stroke:var(--green)" stroke-width="2.5"/><text x="58" y="474">文件字节（数据面）</text>
-            <line x1="20" y1="492" x2="50" y2="492" stroke="currentColor" stroke-opacity=".55" stroke-width="1.4"/><text x="58" y="496">请求与任务消息（控制面）</text>
-          </g>
-        </svg>
-            <figcaption>后端服务只传元数据，文件本身不经过它们：02 签发有时效的 URL，浏览器和 worker 直接读写对象存储。慢任务经 RabbitMQ 分到不同机器：10 分钟内的音频交给云端 ElevenLabs，更长的交给 Mac 上的本地模型。worker 通过 gRPC 向 03 汇报状态（图中省略）。源码见 <a href="https://github.com/justyura/vox" target="_blank" rel="noopener">GitHub</a>。</figcaption>
+              <g font-size="11" fill="currentColor" fill-opacity=".7">
+                <line
+                  x1="20"
+                  y1="470"
+                  x2="50"
+                  y2="470"
+                  style="stroke: var(--green)"
+                  stroke-width="2.5"
+                />
+                <text x="58" y="474">文件字节（数据面）</text>
+                <line
+                  x1="20"
+                  y1="492"
+                  x2="50"
+                  y2="492"
+                  stroke="currentColor"
+                  stroke-opacity=".55"
+                  stroke-width="1.4"
+                />
+                <text x="58" y="496">请求与任务消息（控制面）</text>
+              </g>
+            </svg>
+            <figcaption>
+              后端服务只传元数据，文件本身不经过它们：02 签发有时效的
+              URL，浏览器和 worker 直接读写对象存储。慢任务经 RabbitMQ
+              分到不同机器：10 分钟内的音频交给云端 ElevenLabs，更长的交给 Mac
+              上的本地模型。worker 通过 gRPC 向 03 汇报状态（图中省略）。源码见
+              <a
+                href="https://github.com/justyura/vox"
+                target="_blank"
+                rel="noopener"
+                >GitHub</a
+              >。
+            </figcaption>
           </figure>
           <h2>用到的技术</h2>
           <div class="stackgrid">
-            <div><h3>服务</h3><ul class="stack"><li>Go</li><li>Gin</li><li>gRPC</li><li>Protocol Buffers</li><li>net/http</li></ul><p>对外 HTTP + JSON，服务之间 gRPC。</p></div>
-            <div><h3>数据与存储</h3><ul class="stack"><li>PostgreSQL</li><li>pgx 连接池</li><li>goose 迁移</li><li>MinIO</li><li>阿里云 OSS</li></ul><p>每个服务一个库；存储走 S3 兼容接口，预签名 URL 直传。</p></div>
-            <div><h3>异步任务</h3><ul class="stack"><li>RabbitMQ</li><li>direct 交换机</li><li>手动 ack</li><li>prefetch 1</li><li>竞争消费者</li></ul><p>按阶段路由：转码、短转写、长转写各一条队列。</p></div>
-            <div><h3>媒体与语音</h3><ul class="stack"><li>ffmpeg</li><li>whisper.cpp</li><li>cgo</li><li>Metal</li><li>ElevenLabs Scribe v2</li><li>ECDICT</li></ul><p>同一个 Transcriber 接口，本地和云端两种实现。</p></div>
-            <div><h3>前端与入口</h3><ul class="stack"><li>原生 JavaScript</li><li>nginx 反向代理</li><li>JWT 认证</li></ul><p>无框架、无构建；同源代理，不需要 CORS。</p></div>
-            <div><h3>部署与伸缩</h3><ul class="stack"><li>Docker</li><li>Docker Compose</li><li>Kubernetes</li><li>KEDA</li><li>SSH 隧道</li></ul><p>KEDA 按队列长度自动扩缩 worker；内部端口只绑本机。</p></div>
+            <div>
+              <h3>服务</h3>
+              <ul class="stack">
+                <li>Go</li>
+                <li>Gin</li>
+                <li>gRPC</li>
+                <li>Protocol Buffers</li>
+                <li>net/http</li>
+              </ul>
+              <p>对外 HTTP + JSON，服务之间 gRPC。</p>
+            </div>
+            <div>
+              <h3>数据与存储</h3>
+              <ul class="stack">
+                <li>PostgreSQL</li>
+                <li>pgx 连接池</li>
+                <li>goose 迁移</li>
+                <li>MinIO</li>
+                <li>阿里云 OSS</li>
+              </ul>
+              <p>每个服务一个库；存储走 S3 兼容接口，预签名 URL 直传。</p>
+            </div>
+            <div>
+              <h3>异步任务</h3>
+              <ul class="stack">
+                <li>RabbitMQ</li>
+                <li>direct 交换机</li>
+                <li>手动 ack</li>
+                <li>prefetch 1</li>
+                <li>竞争消费者</li>
+              </ul>
+              <p>按阶段路由：转码、短转写、长转写各一条队列。</p>
+            </div>
+            <div>
+              <h3>媒体与语音</h3>
+              <ul class="stack">
+                <li>ffmpeg</li>
+                <li>whisper.cpp</li>
+                <li>cgo</li>
+                <li>Metal</li>
+                <li>ElevenLabs Scribe v2</li>
+                <li>ECDICT</li>
+              </ul>
+              <p>同一个 Transcriber 接口，本地和云端两种实现。</p>
+            </div>
+            <div>
+              <h3>前端与入口</h3>
+              <ul class="stack">
+                <li>原生 JavaScript</li>
+                <li>nginx 反向代理</li>
+                <li>JWT 认证</li>
+              </ul>
+              <p>
+                无框架、无构建；API 同源代理，文件直传和兼容播放依赖对象存储的
+                CORS 配置。
+              </p>
+            </div>
+            <div>
+              <h3>部署与伸缩</h3>
+              <ul class="stack">
+                <li>Docker</li>
+                <li>Docker Compose</li>
+                <li>Kubernetes</li>
+                <li>KEDA</li>
+                <li>SSH 隧道</li>
+              </ul>
+              <p>
+                worker 可独立部署；KEDA
+                示例尚需对齐当前队列，自动扩缩与生产网络隔离需进一步验证。
+              </p>
+            </div>
           </div>
         </section>
 
@@ -236,26 +930,110 @@
           <h1>常见问题</h1>
           <p class="sub">使用上的问题在前，技术选择在后。</p>
           <h2>使用</h2>
-          <details open><summary>支持哪些文件？</summary><p>常见的音频和视频都可以：mp3、m4a、wav、mp4、mov、mkv、webm 等。上传后会先统一转成 16kHz 单声道 WAV，再交给转写引擎。</p></details>
-          <details><summary>要等多久？</summary><p>10 分钟以内的音频交给云端 ElevenLabs，通常几秒到几十秒就能出结果。更长的交给本地 whisper 模型，需要排队，可能要几分钟；列表里的进度条会告诉你它在排队还是在处理。</p></details>
-          <details><summary>支持哪些语言？</summary><p>默认自动识别。也可以在上传区下方手动指定中文、英文、日语等，指定后识别会更准。</p></details>
-          <details><summary>为什么有的视频在网页里放不了？</summary><p>浏览器只认识 MP4 + H.264 + AAC 这类格式。MKV 容器或 E-AC3 音轨在浏览器里放不了，但转写不受影响，文字和生词照常生成。</p></details>
-          <details><summary>生词是怎么挑出来的？</summary><p>用开源词典 ECDICT 查每个词的考试标签和词频排名，过滤掉中考、高考、四级范围的基础词和最常用的 5000 词，剩下的按出现次数排序。每次打开页面实时计算，不保存。</p></details>
-          <details><summary>字幕能导出吗？</summary><p>可以。阅读页右上角的"更多"里可以下载 SRT 字幕和纯文本，都是根据时间戳在浏览器里当场生成的。</p></details>
-          <details><summary>我的文件存在哪里？谁能看到？</summary><p>存在自建的对象存储里，只有你自己的账号能访问。上传和播放都使用有时效的签名链接，链接过期后就无法再打开。</p></details>
+          <details open>
+            <summary>支持哪些文件？</summary>
+            <p>
+              常见的音频和视频都可以：mp3、m4a、wav、mp4、mov、mkv、webm
+              等。上传后会先统一转成 16kHz 单声道 WAV，再交给转写引擎。
+            </p>
+          </details>
+          <details>
+            <summary>要等多久？</summary>
+            <p>
+              处理时间取决于文件长度、队列积压、转写引擎与机器资源。默认将不超过
+              10
+              分钟的音频分到云端转写队列，更长的分到本地队列。列表定期查询阶段与结果状态，不代表精确的完成百分比。
+            </p>
+          </details>
+          <details>
+            <summary>支持哪些语言？</summary>
+            <p>
+              默认自动识别，也可以在上传区选择中文、英文、日语等。明确指定语言可帮助引擎选择识别语言，准确度仍受声音质量与模型能力影响。
+            </p>
+          </details>
+          <details>
+            <summary>为什么有的视频在网页里放不了？</summary>
+            <p>
+              浏览器对容器和音轨编码的支持不同。MKV、部分 MOV 或 E-AC3
+              音轨可能无法直接播放；可以打开原始文件使用本地播放器。普通音频跳转异常时，可尝试播放器下方的“兼容播放”。
+            </p>
+          </details>
+          <details>
+            <summary>生词是怎么挑出来的？</summary>
+            <p>
+              用开源词典 ECDICT
+              查每个词的考试标签和词频排名，过滤掉中考、高考、四级范围的基础词和最常用的
+              5000 词，剩下的按出现次数排序。每次打开页面实时计算，不保存。
+            </p>
+          </details>
+          <details>
+            <summary>字幕能导出吗？</summary>
+            <p>
+              可以。阅读页右上角的"更多"里可以下载 SRT
+              字幕和纯文本，都是根据时间戳在浏览器里当场生成的。
+            </p>
+          </details>
+          <details>
+            <summary>我的文件存在哪里？谁能看到？</summary>
+            <p>
+              文件保存在对象存储中，应用接口按账户校验文件与任务归属。播放时申请有时效的签名链接，过期后可重新获取；持有有效签名链接的人也能访问对应内容，请不要随意分享。
+            </p>
+          </details>
           <h2>技术</h2>
-          <details><summary>为什么要用消息队列，而不是直接调用？</summary><p>转码要几十秒，转写要几秒到几分钟，用户不能一直等着一个请求返回。任务放进 RabbitMQ 后立即返回，worker 按自己的速度取任务；worker 崩溃或重启，任务也还在队列里，不会丢。</p></details>
-          <details><summary>服务之间用 gRPC，为什么生词服务用 HTTP？</summary><p>协议看调用方。01、02、03 之间是内部的 Go 服务互相调用，gRPC 有强类型接口，性能也好。生词服务要给浏览器和外部程序直接调用，而浏览器不能直接使用 gRPC，所以用 HTTP + JSON。</p></details>
-          <details><summary>文件为什么不经过后端服务？</summary><p>后端只负责签发有时效的 URL（控制面），文件字节由浏览器和 worker 直接和对象存储交换（数据面）。一个几百 MB 的视频不会占用 API 网关的带宽和内存，网关也就不会成为瓶颈。</p></details>
-          <details><summary>为什么按时长分成两条队列？</summary><p>短的要快，长的要省。云端 API 按时长计费（约每小时 0.22 美元），几十秒就出结果；本地模型免费，但慢。分开之后，短任务也不会排在两小时的长任务后面干等，也就是避免了队头阻塞。</p></details>
-          <details><summary>怎么扩容？</summary><p>worker 不保存状态，多开几个副本连到同一条队列就行，RabbitMQ 会把任务轮流分给它们（竞争消费者）。在 Kubernetes 上用 KEDA 按队列长度自动增减副本，队列清空后缩到零。</p></details>
-          <details><summary>Mac 关机了，长任务怎么办？</summary><p>队列是持久化的，任务会一直在 transcribe-long 里等着，Mac 重新连上后继续处理，不会丢失。</p></details>
+          <details>
+            <summary>为什么要用消息队列，而不是直接调用？</summary>
+            <p>
+              创建任务后即可返回，耗时的转码与转写由 worker
+              在后台完成，浏览器无需保持请求等待。队列和消息配置了持久化；数据库与消息一致性、失败重试和死信仍是后续完善项，目前不承诺任务零丢失。
+            </p>
+          </details>
+          <details>
+            <summary>服务之间用 gRPC，为什么生词服务用 HTTP？</summary>
+            <p>
+              协议看调用方。01、02、03 之间是内部的 Go 服务互相调用，gRPC
+              有强类型接口，性能也好。生词服务要给浏览器和外部程序直接调用，而浏览器不能直接使用
+              gRPC，所以用 HTTP + JSON。
+            </p>
+          </details>
+          <details>
+            <summary>文件为什么不经过后端服务？</summary>
+            <p>
+              API 和文件服务负责授权与签名，浏览器和 worker
+              直接读写对象存储。这样大文件字节不用经过 API
+              网关，业务接口与文件传输分别承担负载；数据库、存储与网络仍各有容量限制。
+            </p>
+          </details>
+          <details>
+            <summary>为什么按时长分成两条队列？</summary>
+            <p>
+              默认以 10
+              分钟为界，分别为云端与本地转写安排资源，减少长短转写在同一队列中的等待。云端有调用成本，本地有硬件和运行成本；当前分流是可调整的策略，并非经过完整成本与延迟基准验证的最优方案。转码与存储仍是共享环节。
+            </p>
+          </details>
+          <details>
+            <summary>怎么扩容？</summary>
+            <p>
+              转码、短音频转写、长音频转写各有队列和 worker
+              进程，可以分别增加消费者。实际提升需要结合处理瓶颈、硬件和云端配额验证。仓库里的
+              KEDA 配置仍是待更新示例，需要先对齐当前队列，再验证自动扩缩容。
+            </p>
+          </details>
+          <details>
+            <summary>Mac 关机了，长任务怎么办？</summary>
+            <p>
+              未被消费的长音频任务会留在持久化队列中，等待对应
+              worker。重新启动时仍需考虑消息中的签名链接是否有效，以及处理过程是否被中断；自动重试和幂等恢复还需要完善。
+            </p>
+          </details>
         </section>
       </main>
     </div>
 
     <dialog id="tech">
-      <header><span>技术信息</span><button class="ghost" id="tech-close" aria-label="关闭">×</button></header>
+      <header>
+        <span>技术信息</span
+        ><button class="ghost" id="tech-close" aria-label="关闭">×</button>
+      </header>
       <pre id="tech-body"></pre>
     </dialog>
     <div id="toast" role="status" hidden></div>
