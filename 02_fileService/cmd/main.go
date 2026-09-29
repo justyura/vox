@@ -86,6 +86,7 @@ func newBlobStore(ttl time.Duration) (blob.OSS, error) {
 			os.Getenv("MINIO_ACCESSKEY"),
 			os.Getenv("MINIO_SECRETACCESSKEY"),
 			ttl,
+			os.Getenv("MINIO_SECURE") == "true",
 		)
 	default:
 		return nil, fmt.Errorf("unknown BLOB_BACKEND %q", backend)

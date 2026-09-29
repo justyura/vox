@@ -15,10 +15,10 @@ type MinioClient struct {
 	ttl time.Duration
 }
 
-func NewMinioClient(endpoint, accessKey, secretAccessKey string, ttl time.Duration) (*MinioClient, error) {
+func NewMinioClient(endpoint, accessKey, secretAccessKey string, ttl time.Duration, secure bool) (*MinioClient, error) {
 	api, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretAccessKey, ""),
-		Secure: false,
+		Secure: secure,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("create minio client: %w", err)
