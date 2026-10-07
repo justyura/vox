@@ -18,7 +18,6 @@ import (
 	"github.com/justyura/vox/03_taskService/internal/migrations"
 	"github.com/justyura/vox/03_taskService/internal/service"
 	taskpb "github.com/justyura/vox/03_taskService/proto"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -56,15 +55,7 @@ func main() {
 	fc := client.NewGRPCClient(filepb.NewFileManagerClient(conn))
 
 	// ds interface
-	rconn, err := amqp.Dial(os.Getenv("RABBITMQ_ADDR"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	ch, err := rconn.Channel()
-	if err != nil {
-		log.Fatal(err)
-	}
-	ds, err := distributor.NewRabbitMQ(ch)
+	ds, err := distributor.NewRabbitMQ(os.Getenv("RABBITMQ_ADDR"))
 	if err != nil {
 		log.Fatal(err)
 	}
