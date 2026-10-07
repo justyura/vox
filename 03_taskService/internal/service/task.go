@@ -47,6 +47,7 @@ func (t *TaskServer) CreateTask(ctx context.Context, userID, inputFileID uuid.UU
 
 	// stage is the routing key
 	if err := t.ds.Distribute(ctx, taskID, inputURL, outputURL, stage, language); err != nil {
+		_ = t.st.UpdateStatus(ctx, taskID, model.StatusFailed)
 		return taskID, err
 	}
 	if err := t.st.UpdateStatus(ctx, taskID, model.StatusDispatched); err != nil {
@@ -90,7 +91,11 @@ func (t *TaskServer) ReportStage(ctx context.Context, jobID uuid.UUID, status st
 		if err := t.st.Advance(ctx, jobID, stage, outputFileID); err != nil {
 			return err
 		}
-		return t.ds.Distribute(ctx, jobID, inputURL, outputURL, stage, task.Language)
+		if err := t.ds.Distribute(ctx, jobID, inputURL, outputURL, stage, task.Language); err != nil {
+			_ = t.st.UpdateStatus(ctx, jobID, model.StatusFailed)
+			return err
+		}
+		return nil
 	}
 	return t.st.UpdateStatus(ctx, jobID, model.StatusCompleted)
 }
