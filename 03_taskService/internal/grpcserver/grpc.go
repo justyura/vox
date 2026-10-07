@@ -78,7 +78,7 @@ func (gs *GRPCServer) UpdateStatus(ctx context.Context, req *taskpb.UpdateStatus
 		return nil, err
 	}
 	s := req.Status
-	if s != model.StatusCompleted && s != model.StatusFailed {
+	if s != model.StatusCompleted && s != model.StatusFailed && s != model.StatusProcessing {
 		return nil, status.Error(codes.InvalidArgument, "invalid status")
 	}
 	if err := gs.ts.ReportStage(ctx, taskid, s); err != nil {
