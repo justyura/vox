@@ -2,7 +2,8 @@ FROM golang:1.25 AS build
 
 RUN apt-get update && apt-get install -y cmake
 RUN git clone https://github.com/ggml-org/whisper.cpp.git /whisper \
- && cd /whisper && cd bindings/go && make whisper
+ && cd /whisper && git checkout 30c5194c9691 \
+ && cd bindings/go && make whisper
 
 WORKDIR /src
 COPY go.mod go.sum ./
