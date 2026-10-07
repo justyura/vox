@@ -81,7 +81,7 @@
     const shell = document.createElement("section");
     shell.className = "media-card";
     shell.innerHTML = `<div class="media-heading"><span class="eyebrow">${video ? "VIDEO" : "AUDIO"} / 回听</span><span class="media-format">${sourceLabel}</span></div>
-      <div class="stage${video ? "" : " audio"}"><${video ? "video" : "audio"} controls preload="metadata" playsinline aria-label="转写原始媒体"></${video ? "video" : "audio"}><div class="cap" hidden></div></div>
+      <div class="stage${video ? "" : " audio"}"><${video ? "video" : "audio"} controls preload="${video ? "metadata" : "auto"}" playsinline aria-label="转写原始媒体"></${video ? "video" : "audio"}><div class="cap" hidden></div></div>
       <div class="caption-words" aria-label="当前句生词" hidden></div>
       <div class="media-tools"><button type="button" data-skip="-10" aria-label="后退 10 秒">↶ 10s</button><button type="button" data-skip="10" aria-label="前进 10 秒">10s ↷</button><label>倍速 <select aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label><button type="button" class="media-unmute" hidden>开启声音</button></div>
       <div class="media-feedback"><span role="status" class="media-status">正在获取音频…</span><button type="button" class="media-retry" hidden>重新加载</button>${video ? "" : '<button type="button" class="media-compatible" title="完整读取音频并转换为可定位的 WAV，支持 64 MB / 30 分钟以内音频">兼容播放</button>'}</div>`;
